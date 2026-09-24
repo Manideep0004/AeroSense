@@ -61,8 +61,7 @@ AeroSense uses a multi-stage Docker build to package both the React frontend and
 # Build and spin up the entire stack
 docker-compose up --build
 ```
-* **AeroSense Unified Dashboard & API:** [http://localhost:8000](http://localhost:8000)
-* **MLflow Tracking UI:** [http://localhost:5000](http://localhost:5000)
+
 
 ### Option 2: Local Development Mode (Hot Reloading)
 ```bash
