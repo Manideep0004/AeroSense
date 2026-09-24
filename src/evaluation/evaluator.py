@@ -23,14 +23,18 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import joblib
 import mlflow
-import numpy as np
 import pandas as pd
 
-from src.evaluation.model_gate import GateConfig, GateReport, GateVerdict, ModelEvaluationGate
+from src.evaluation.model_gate import (
+    GateConfig,
+    GateReport,
+    GateVerdict,
+    ModelEvaluationGate,
+)
 from src.evaluation.plots import (
     plot_feature_importance,
     plot_residual_analysis,
@@ -72,7 +76,7 @@ class ModelEvaluator:
     def __init__(
         self,
         report_dir: Path = Path("reports/plots"),
-        gate_config: Optional[GateConfig] = None,
+        gate_config: GateConfig | None = None,
         tracking_uri: str = "sqlite:///mlruns/mlflow.db",
         enable_shap: bool = True,
         shap_sample_size: int = 500,
@@ -93,7 +97,7 @@ class ModelEvaluator:
         self,
         data_path: Path,
         season: str,
-        feature_cols: List[str],
+        feature_cols: list[str],
     ) -> tuple[pd.DataFrame, pd.Series]:
         """
         Re-run the preprocessing pipeline and return the test split
@@ -113,7 +117,9 @@ class ModelEvaluator:
         splits = pp.split_by_season(cleaned)
 
         if season not in splits:
-            raise KeyError(f"Season '{season}' not found in data. Available: {list(splits.keys())}")
+            raise KeyError(
+                f"Season '{season}' not found in data. Available: {list(splits.keys())}"
+            )
 
         X_test = splits[season].X_test[feature_cols]
         y_test = splits[season].y_test
@@ -125,7 +131,7 @@ class ModelEvaluator:
 
     def evaluate_single(
         self,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         data_path: Path,
     ) -> GateReport:
         """
@@ -153,7 +159,8 @@ class ModelEvaluator:
         if not model_path.exists():
             logger.error("Model artifact not found at '%s'. Skipping.", model_path)
             return GateReport(
-                season=season, model_name=model_name,
+                season=season,
+                model_name=model_name,
                 verdict=GateVerdict.SKIPPED,
                 summary=f"Model artifact missing at '{model_path}'.",
             )
@@ -166,7 +173,7 @@ class ModelEvaluator:
         y_pred = model.predict(X_test)
 
         # ── 1. Generate diagnostic plots ──────────────────────────────────
-        plot_paths: Dict[str, Path] = {}
+        plot_paths: dict[str, Path] = {}
 
         logger.info("  [1/3] Generating diagnostic plots...")
 
@@ -241,7 +248,9 @@ class ModelEvaluator:
                     gate_report_path.parent.mkdir(parents=True, exist_ok=True)
                     with open(gate_report_path, "w") as fh:
                         json.dump(gate_report.to_dict(), fh, indent=2)
-                    mlflow.log_artifact(str(gate_report_path), artifact_path="evaluation_plots")
+                    mlflow.log_artifact(
+                        str(gate_report_path), artifact_path="evaluation_plots"
+                    )
 
                     # Log gate verdict as metric (1=pass, 0=fail)
                     mlflow.log_metric(
@@ -255,7 +264,8 @@ class ModelEvaluator:
         if gate_report.verdict == GateVerdict.PASSED and run_id:
             logger.info(
                 "  Gate PASSED — registering '%s/%s' to MLflow Registry (Staging).",
-                season, model_name,
+                season,
+                model_name,
             )
             try:
                 version = self.registry.register_model(
@@ -280,7 +290,8 @@ class ModelEvaluator:
         elif gate_report.verdict == GateVerdict.FAILED and run_id:
             logger.warning(
                 "  Gate FAILED — '%s/%s' will NOT be registered.",
-                season, model_name,
+                season,
+                model_name,
             )
 
         return gate_report
@@ -293,7 +304,7 @@ class ModelEvaluator:
         self,
         summary_path: Path,
         data_path: Path,
-    ) -> Dict[str, Dict[str, GateReport]]:
+    ) -> dict[str, dict[str, GateReport]]:
         """
         Load experiment results from a JSON summary file and evaluate all models.
 
@@ -305,12 +316,14 @@ class ModelEvaluator:
             Nested dict: ``reports[season][model_name] = GateReport``.
         """
         if not summary_path.exists():
-            raise FileNotFoundError(f"Experiment summary not found at '{summary_path}'.")
+            raise FileNotFoundError(
+                f"Experiment summary not found at '{summary_path}'."
+            )
 
         with open(summary_path) as fh:
             summary = json.load(fh)
 
-        all_reports: Dict[str, Dict[str, GateReport]] = {}
+        all_reports: dict[str, dict[str, GateReport]] = {}
 
         for season, model_results in summary.items():
             all_reports[season] = {}
@@ -318,7 +331,9 @@ class ModelEvaluator:
                 if "error" in result:
                     logger.warning(
                         "Skipping [%s | %s] — recorded error: %s",
-                        season, model_name, result["error"],
+                        season,
+                        model_name,
+                        result["error"],
                     )
                     continue
                 result["season"] = season
@@ -335,21 +350,22 @@ class ModelEvaluator:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _print_gate_summary(
-        reports: Dict[str, Dict[str, GateReport]]
-    ) -> None:
+    def _print_gate_summary(reports: dict[str, dict[str, GateReport]]) -> None:
         """Print a formatted gate result table to stdout."""
         rows = []
         for season, model_reports in reports.items():
             for model_name, report in model_reports.items():
-                rows.append({
-                    "Season": season,
-                    "Model": model_name,
-                    "Verdict": report.verdict.name,
-                    "Failed Criteria": ", ".join(
-                        c.name for c in report.criteria if not c.passed
-                    ) or "—",
-                })
+                rows.append(
+                    {
+                        "Season": season,
+                        "Model": model_name,
+                        "Verdict": report.verdict.name,
+                        "Failed Criteria": ", ".join(
+                            c.name for c in report.criteria if not c.passed
+                        )
+                        or "—",
+                    }
+                )
 
         if not rows:
             return
@@ -365,44 +381,56 @@ class ModelEvaluator:
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="AaroSense Model Evaluator — Milestone 2",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--summary-path", type=Path,
+        "--summary-path",
+        type=Path,
         default=Path("models/experiment_summary.json"),
         help="Path to experiment_summary.json produced by the runner.",
     )
     parser.add_argument(
-        "--data-path", type=Path,
+        "--data-path",
+        type=Path,
         default=Path("data/raw/pm25_dataset.csv"),
         help="Path to raw CSV (for reconstructing test sets).",
     )
     parser.add_argument(
-        "--report-dir", type=Path,
+        "--report-dir",
+        type=Path,
         default=Path("reports/plots"),
         help="Directory to save diagnostic plots.",
     )
     parser.add_argument(
-        "--rmse-gate", type=float, default=50.0,
+        "--rmse-gate",
+        type=float,
+        default=50.0,
         help="Max acceptable test RMSE (µg/m³).",
     )
     parser.add_argument(
-        "--r2-min", type=float, default=0.70,
+        "--r2-min",
+        type=float,
+        default=0.70,
         help="Minimum acceptable test R².",
     )
     parser.add_argument(
-        "--no-shap", action="store_true",
+        "--no-shap",
+        action="store_true",
         help="Disable SHAP computation (faster evaluation).",
     )
     parser.add_argument(
-        "--shap-samples", type=int, default=500,
+        "--shap-samples",
+        type=int,
+        default=500,
         help="Number of samples to use for SHAP computation.",
     )
     parser.add_argument(
-        "--mlflow-uri", type=str,
+        "--mlflow-uri",
+        type=str,
         default="sqlite:///mlruns/mlflow.db",
         help="MLflow tracking server URI.",
     )

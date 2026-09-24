@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -48,6 +47,7 @@ logger = logging.getLogger("AaroSense.DriftDetector")
 # ---------------------------------------------------------------------------
 # PSI computation
 # ---------------------------------------------------------------------------
+
 
 def _compute_psi(
     reference: np.ndarray,
@@ -77,18 +77,20 @@ def _compute_psi(
 
     if len(breakpoints) < 3:
         # Degenerate case: constant feature — no meaningful PSI
-        logger.debug("Degenerate bin breakpoints for PSI (constant feature?). Returning 0.")
+        logger.debug(
+            "Degenerate bin breakpoints for PSI (constant feature?). Returning 0."
+        )
         return 0.0
 
     # Bin proportions — clip production values to reference range
     ref_counts, _ = np.histogram(reference, bins=breakpoints)
     prod_counts, _ = np.histogram(production, bins=breakpoints)
 
-    ref_props  = ref_counts  / (ref_counts.sum()  + epsilon)
+    ref_props = ref_counts / (ref_counts.sum() + epsilon)
     prod_props = prod_counts / (prod_counts.sum() + epsilon)
 
     # Add epsilon to avoid log(0)
-    ref_props  = np.clip(ref_props,  epsilon, None)
+    ref_props = np.clip(ref_props, epsilon, None)
     prod_props = np.clip(prod_props, epsilon, None)
 
     psi = float(np.sum((prod_props - ref_props) * np.log(prod_props / ref_props)))
@@ -98,6 +100,7 @@ def _compute_psi(
 # ---------------------------------------------------------------------------
 # Per-feature drift tests
 # ---------------------------------------------------------------------------
+
 
 def _run_ks_test(
     reference: np.ndarray,
@@ -118,16 +121,20 @@ def _run_ks_test(
         ``KSTestResult`` with statistic, p-value, and drift flag.
     """
     # Drop NaNs before testing
-    ref_clean  = reference[~np.isnan(reference)]
+    ref_clean = reference[~np.isnan(reference)]
     prod_clean = production[~np.isnan(production)]
 
     if len(ref_clean) < 5 or len(prod_clean) < 5:
         logger.warning(
             "Feature '%s': insufficient non-null samples for KS test "
-            "(ref=%d, prod=%d). Skipping.", feature, len(ref_clean), len(prod_clean),
+            "(ref=%d, prod=%d). Skipping.",
+            feature,
+            len(ref_clean),
+            len(prod_clean),
         )
-        return KSTestResult(feature=feature, statistic=0.0, p_value=1.0,
-                            drifted=False, alpha=alpha)
+        return KSTestResult(
+            feature=feature, statistic=0.0, p_value=1.0, drifted=False, alpha=alpha
+        )
 
     ks_stat, p_value = stats.ks_2samp(ref_clean, prod_clean)
     drifted = bool(p_value < alpha)
@@ -160,16 +167,23 @@ def _run_psi_test(
     Returns:
         ``PSIResult`` with PSI score and drift flag.
     """
-    ref_clean  = reference[~np.isnan(reference)]
+    ref_clean = reference[~np.isnan(reference)]
     prod_clean = production[~np.isnan(production)]
 
     if len(ref_clean) < 5 or len(prod_clean) < 5:
         logger.warning(
             "Feature '%s': insufficient samples for PSI (ref=%d, prod=%d). Skipping.",
-            feature, len(ref_clean), len(prod_clean),
+            feature,
+            len(ref_clean),
+            len(prod_clean),
         )
-        return PSIResult(feature=feature, psi=0.0, drifted=False,
-                         psi_threshold=psi_threshold, n_bins=n_bins)
+        return PSIResult(
+            feature=feature,
+            psi=0.0,
+            drifted=False,
+            psi_threshold=psi_threshold,
+            n_bins=n_bins,
+        )
 
     psi = _compute_psi(ref_clean, prod_clean, n_bins=n_bins)
     drifted = bool(psi > psi_threshold)
@@ -185,6 +199,7 @@ def _run_psi_test(
 # ---------------------------------------------------------------------------
 # Main DriftDetector class
 # ---------------------------------------------------------------------------
+
 
 class DriftDetector:
     """
@@ -214,7 +229,7 @@ class DriftDetector:
         psi_warning: float = 0.10,
         n_psi_bins: int = 10,
         drift_fraction_alert: float = 0.20,
-        features_to_monitor: Optional[List[str]] = None,
+        features_to_monitor: list[str] | None = None,
     ) -> None:
         self.baseline_dir = Path(baseline_dir)
         self.ks_alpha = ks_alpha
@@ -225,11 +240,13 @@ class DriftDetector:
         self.features_to_monitor = features_to_monitor
 
         # Cache: season → baseline DataFrame
-        self._baseline_cache: Dict[str, pd.DataFrame] = {}
+        self._baseline_cache: dict[str, pd.DataFrame] = {}
         logger.info(
             "DriftDetector initialised. Baseline dir: '%s' | "
             "KS α=%.3f | PSI threshold=%.3f",
-            self.baseline_dir, self.ks_alpha, self.psi_threshold,
+            self.baseline_dir,
+            self.ks_alpha,
+            self.psi_threshold,
         )
 
     # ------------------------------------------------------------------
@@ -265,11 +282,13 @@ class DriftDetector:
         self._baseline_cache[season] = baseline
         logger.info(
             "Loaded '%s' baseline: shape=%s from '%s'.",
-            season, baseline.shape, parquet_path,
+            season,
+            baseline.shape,
+            parquet_path,
         )
         return baseline
 
-    def _get_numeric_features(self, df: pd.DataFrame) -> List[str]:
+    def _get_numeric_features(self, df: pd.DataFrame) -> list[str]:
         """Return list of numeric columns to test (respecting whitelist)."""
         numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
         if self.features_to_monitor:
@@ -284,7 +303,7 @@ class DriftDetector:
         self,
         season: str,
         production_batch: pd.DataFrame,
-    ) -> List[FeatureDriftResult]:
+    ) -> list[FeatureDriftResult]:
         """
         Run KS + PSI tests for every monitored feature in the batch.
 
@@ -302,26 +321,26 @@ class DriftDetector:
         common_features = [f for f in features if f in production_batch.columns]
         missing = set(features) - set(common_features)
         if missing:
-            logger.warning(
-                "Features in baseline but missing from batch: %s", missing
-            )
+            logger.warning("Features in baseline but missing from batch: %s", missing)
 
-        results: List[FeatureDriftResult] = []
+        results: list[FeatureDriftResult] = []
 
         for feature in common_features:
-            ref_vals  = baseline[feature].to_numpy(dtype=float)
+            ref_vals = baseline[feature].to_numpy(dtype=float)
             prod_vals = production_batch[feature].to_numpy(dtype=float)
 
-            ks_result  = _run_ks_test(ref_vals, prod_vals, feature, self.ks_alpha)
+            ks_result = _run_ks_test(ref_vals, prod_vals, feature, self.ks_alpha)
             psi_result = _run_psi_test(
                 ref_vals, prod_vals, feature, self.psi_threshold, self.n_psi_bins
             )
 
-            results.append(FeatureDriftResult(
-                feature=feature,
-                ks=ks_result,
-                psi=psi_result,
-            ))
+            results.append(
+                FeatureDriftResult(
+                    feature=feature,
+                    ks=ks_result,
+                    psi=psi_result,
+                )
+            )
 
         # Log summary row per feature
         for r in results:
@@ -329,7 +348,8 @@ class DriftDetector:
             log_fn(
                 "  Feature %-22s | KS=%.4f (p=%.4f, %s) | PSI=%.4f (%s)",
                 r.feature,
-                r.ks.statistic, r.ks.p_value,
+                r.ks.statistic,
+                r.ks.p_value,
                 "DRIFT" if r.ks.drifted else "OK",
                 r.psi.psi,
                 "DRIFT" if r.psi.drifted else "OK",
@@ -341,7 +361,7 @@ class DriftDetector:
         self,
         season: str,
         production_batch: pd.DataFrame,
-        batch_metadata: Optional[Dict] = None,
+        batch_metadata: dict | None = None,
     ) -> DriftReport:
         """
         Execute the complete drift detection pipeline for a batch.
@@ -362,7 +382,8 @@ class DriftDetector:
         """
         logger.info(
             "Running drift detection: season='%s', batch_size=%d",
-            season, len(production_batch),
+            season,
+            len(production_batch),
         )
 
         feature_results = self.detect_feature_drift(season, production_batch)
@@ -460,13 +481,19 @@ class DriftDetector:
             else:
                 severity_label = "Drift"
                 psi_bin = 2
-            rows.append({
-                "feature": r.feature,
-                "psi": round(r.psi.psi, 4),
-                "ks_statistic": round(r.ks.statistic, 4),
-                "ks_p_value": round(r.ks.p_value, 4),
-                "severity_label": severity_label,
-                "psi_bin": psi_bin,
-                "season": season,
-            })
-        return pd.DataFrame(rows).sort_values("psi", ascending=False).reset_index(drop=True)
+            rows.append(
+                {
+                    "feature": r.feature,
+                    "psi": round(r.psi.psi, 4),
+                    "ks_statistic": round(r.ks.statistic, 4),
+                    "ks_p_value": round(r.ks.p_value, 4),
+                    "severity_label": severity_label,
+                    "psi_bin": psi_bin,
+                    "season": season,
+                }
+            )
+        return (
+            pd.DataFrame(rows)
+            .sort_values("psi", ascending=False)
+            .reset_index(drop=True)
+        )

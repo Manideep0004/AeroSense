@@ -14,15 +14,15 @@ from __future__ import annotations
 
 import logging
 import sys
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pandas as pd
 
 from src.monitoring.batch_monitor import BatchMonitor
-from src.monitoring.types import DriftSeverity
 from src.preprocessing import PM25DataPreprocessor, PreprocessingConfig
 
 logging.basicConfig(
@@ -43,7 +43,11 @@ def load_clean_batch() -> pd.DataFrame:
     pp = PM25DataPreprocessor(config=PreprocessingConfig(train_ratio=0.80))
     cleaned = pp.clean_and_prepare(raw_df)
     splits = pp.split_by_season(cleaned)
-    return splits[SEASON].X_test.sample(n=BATCH_SIZE, random_state=42).reset_index(drop=True)
+    return (
+        splits[SEASON]
+        .X_test.sample(n=BATCH_SIZE, random_state=42)
+        .reset_index(drop=True)
+    )
 
 
 def inject_drift(df: pd.DataFrame, scale: float = 4.0) -> pd.DataFrame:
@@ -60,8 +64,9 @@ def inject_drift(df: pd.DataFrame, scale: float = 4.0) -> pd.DataFrame:
     return drifted
 
 
-def run_test(name: str, batch: pd.DataFrame, monitor: BatchMonitor,
-             expect_alert: bool) -> bool:
+def run_test(
+    name: str, batch: pd.DataFrame, monitor: BatchMonitor, expect_alert: bool
+) -> bool:
     """Run a single scenario and return True if it meets expectations."""
     logger.info("\n%s\n  Scenario: %s\n%s", "=" * 60, name, "=" * 60)
     report = monitor.monitor_batch(season=SEASON, batch_df=batch, batch_id=name)
@@ -71,7 +76,9 @@ def run_test(name: str, batch: pd.DataFrame, monitor: BatchMonitor,
     logger.info(
         "  %s | Alert expected=%s | Got=%s | Severity=%s | "
         "Drift=%.1f%% | Drifted features: %s",
-        status, expect_alert, report.alert_triggered,
+        status,
+        expect_alert,
+        report.alert_triggered,
         report.overall_severity.name,
         report.drift_fraction * 100,
         report.drifted_features[:5] if report.drifted_features else "None",
@@ -102,10 +109,11 @@ def main() -> None:
     )
     # Natural drift should be moderate — the detector must respond
     natural_drift_frac = report_clean.drift_fraction
-    natural_ok = natural_drift_frac >= 0.0   # Always true — just capture for comparison
+    natural_ok = natural_drift_frac >= 0.0  # Always true — just capture for comparison
     logger.info(
         "  ✅ Natural drift fraction = %.1f%% | Severity = %s",
-        natural_drift_frac * 100, report_clean.overall_severity.name,
+        natural_drift_frac * 100,
+        report_clean.overall_severity.name,
     )
     all_passed = all_passed and natural_ok
 
@@ -117,7 +125,7 @@ def main() -> None:
     )
     # Injected drift must trigger an alert AND be higher than natural drift
     drift_escalated = report_drifted.drift_fraction > natural_drift_frac
-    alert_fired     = report_drifted.alert_triggered
+    alert_fired = report_drifted.alert_triggered
     passed = drift_escalated and alert_fired
     all_passed = all_passed and passed
     logger.info(
@@ -128,7 +136,6 @@ def main() -> None:
         report_drifted.drift_fraction * 100,
         report_drifted.overall_severity.name,
     )
-
 
     # ── Scenario 3: PSI heatmap structure ────────────────────────────────
     logger.info("\n%s\n  Scenario: PSI heatmap\n%s", "=" * 60, "=" * 60)
@@ -154,18 +161,20 @@ def main() -> None:
     all_passed = all_passed and snap_ok
     logger.info(
         "  %s | Snapshot: %s",
-        "✅ PASS" if snap_ok else "❌ FAIL", snapshot,
+        "✅ PASS" if snap_ok else "❌ FAIL",
+        snapshot,
     )
 
     # ── Verify JSONL audit log was written ────────────────────────────────
     report_logs = list(Path("logs/drift_reports").glob("*.jsonl"))
-    alert_logs  = list(Path("logs/drift_alerts").glob("*.jsonl"))
+    alert_logs = list(Path("logs/drift_alerts").glob("*.jsonl"))
     logs_ok = len(report_logs) > 0 and len(alert_logs) > 0
     all_passed = all_passed and logs_ok
     logger.info(
         "  %s | Report logs: %d | Alert logs: %d",
         "✅ PASS" if logs_ok else "❌ FAIL",
-        len(report_logs), len(alert_logs),
+        len(report_logs),
+        len(alert_logs),
     )
 
     # ── Final verdict ─────────────────────────────────────────────────────

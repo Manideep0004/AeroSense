@@ -21,10 +21,11 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import matplotlib
-matplotlib.use("Agg")   # Non-interactive backend — safe for headless CI/CD
+
+matplotlib.use("Agg")  # Non-interactive backend — safe for headless CI/CD
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -37,14 +38,15 @@ logger = logging.getLogger("AaroSense.Plots")
 # Consistent visual style across all figures
 sns.set_theme(style="whitegrid", palette="muted", font_scale=1.1)
 FIGURE_DPI: int = 150
-ACCENT_COLOR: str = "#2563eb"    # Blue-600
-WARN_COLOR: str  = "#dc2626"     # Red-600
-GRID_COLOR: str  = "#e5e7eb"     # Gray-200
+ACCENT_COLOR: str = "#2563eb"  # Blue-600
+WARN_COLOR: str = "#dc2626"  # Red-600
+GRID_COLOR: str = "#e5e7eb"  # Gray-200
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_output_dir(report_dir: Path, season: str, model_name: str) -> Path:
     """Create and return ``report_dir/<season>/<model>/``."""
@@ -65,13 +67,14 @@ def _save_fig(fig: plt.Figure, path: Path) -> Path:
 # 1. Residual Analysis Panel
 # ---------------------------------------------------------------------------
 
+
 def plot_residual_analysis(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     season: str,
     model_name: str,
     report_dir: Path,
-    metrics: Optional[Dict[str, float]] = None,
+    metrics: dict[str, float] | None = None,
 ) -> Path:
     """
     Generate a 3-panel residual analysis figure.
@@ -98,7 +101,9 @@ def plot_residual_analysis(
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
     fig.suptitle(
         f"Residual Analysis — {season} | {model_name.upper()}",
-        fontsize=14, fontweight="bold", y=1.02,
+        fontsize=14,
+        fontweight="bold",
+        y=1.02,
     )
 
     # ── Panel 1: Predicted vs Actual ──────────────────────────────────────
@@ -109,9 +114,13 @@ def plot_residual_analysis(
         min(y_true.min(), y_pred.min()) * 0.95,
         max(y_true.max(), y_pred.max()) * 1.05,
     ]
-    ax1.plot(lims, lims, "--", color=WARN_COLOR, linewidth=1.5, label="Perfect fit (1:1)")
-    ax1.set_xlim(lims); ax1.set_ylim(lims)
-    ax1.set_xlabel("Actual PM2.5 (µg/m³)"); ax1.set_ylabel("Predicted PM2.5 (µg/m³)")
+    ax1.plot(
+        lims, lims, "--", color=WARN_COLOR, linewidth=1.5, label="Perfect fit (1:1)"
+    )
+    ax1.set_xlim(lims)
+    ax1.set_ylim(lims)
+    ax1.set_xlabel("Actual PM2.5 (µg/m³)")
+    ax1.set_ylabel("Predicted PM2.5 (µg/m³)")
     ax1.set_title("Predicted vs Actual")
     ax1.legend(fontsize=9)
 
@@ -122,18 +131,27 @@ def plot_residual_analysis(
             f"R²   = {metrics.get('r2', 0):.4f}"
         )
         ax1.text(
-            0.04, 0.95, annotation,
-            transform=ax1.transAxes, va="top",
-            fontsize=9, family="monospace",
+            0.04,
+            0.95,
+            annotation,
+            transform=ax1.transAxes,
+            va="top",
+            fontsize=9,
+            family="monospace",
             bbox=dict(boxstyle="round,pad=0.4", facecolor="white", alpha=0.8),
         )
 
     # ── Panel 2: Residual Distribution ────────────────────────────────────
     ax2 = axes[1]
     sns.histplot(residuals, bins=50, kde=True, ax=ax2, color=ACCENT_COLOR, alpha=0.65)
-    ax2.axvline(0, color=WARN_COLOR, linestyle="--", linewidth=1.5, label="Zero residual")
     ax2.axvline(
-        residuals.mean(), color="#16a34a", linestyle=":", linewidth=1.5,
+        0, color=WARN_COLOR, linestyle="--", linewidth=1.5, label="Zero residual"
+    )
+    ax2.axvline(
+        residuals.mean(),
+        color="#16a34a",
+        linestyle=":",
+        linewidth=1.5,
         label=f"Mean = {residuals.mean():.2f}",
     )
     ax2.set_xlabel("Residual (Actual − Predicted, µg/m³)")
@@ -143,15 +161,24 @@ def plot_residual_analysis(
 
     # ── Panel 3: Residuals vs Predicted ───────────────────────────────────
     ax3 = axes[2]
-    ax3.scatter(y_pred, residuals, alpha=0.35, s=12, color=ACCENT_COLOR, rasterized=True)
+    ax3.scatter(
+        y_pred, residuals, alpha=0.35, s=12, color=ACCENT_COLOR, rasterized=True
+    )
     ax3.axhline(0, color=WARN_COLOR, linestyle="--", linewidth=1.5)
     ax3.axhline(
         residuals.mean() + 2 * residuals.std(),
-        color="#f59e0b", linestyle=":", linewidth=1.0, alpha=0.7, label="±2σ band",
+        color="#f59e0b",
+        linestyle=":",
+        linewidth=1.0,
+        alpha=0.7,
+        label="±2σ band",
     )
     ax3.axhline(
         residuals.mean() - 2 * residuals.std(),
-        color="#f59e0b", linestyle=":", linewidth=1.0, alpha=0.7,
+        color="#f59e0b",
+        linestyle=":",
+        linewidth=1.0,
+        alpha=0.7,
     )
     ax3.set_xlabel("Predicted PM2.5 (µg/m³)")
     ax3.set_ylabel("Residual (µg/m³)")
@@ -167,9 +194,10 @@ def plot_residual_analysis(
 # 2. Feature Importance Plot (model-native)
 # ---------------------------------------------------------------------------
 
+
 def plot_feature_importance(
     model: Any,
-    feature_names: List[str],
+    feature_names: list[str],
     season: str,
     model_name: str,
     report_dir: Path,
@@ -193,7 +221,7 @@ def plot_feature_importance(
         Path to the saved PNG file.
     """
     out_dir = _make_output_dir(report_dir, season, model_name)
-    importances: Optional[np.ndarray] = None
+    importances: np.ndarray | None = None
 
     try:
         algo = model_name.lower()
@@ -202,36 +230,48 @@ def plot_feature_importance(
         elif algo == "xgboost":
             raw = model.get_booster().get_score(importance_type="gain")
             # XGBoost returns a dict keyed by 'f<index>'
-            importances = np.array([
-                raw.get(f"f{i}", 0.0) for i in range(len(feature_names))
-            ])
+            importances = np.array(
+                [raw.get(f"f{i}", 0.0) for i in range(len(feature_names))]
+            )
         elif algo == "catboost":
             importances = np.array(model.get_feature_importance())
         else:
             # sklearn-style: feature_importances_ (mean decrease impurity)
             importances = model.feature_importances_
     except Exception as exc:
-        logger.warning("Could not extract native importance for '%s': %s", model_name, exc)
+        logger.warning(
+            "Could not extract native importance for '%s': %s", model_name, exc
+        )
         if hasattr(model, "feature_importances_"):
             importances = model.feature_importances_
 
     if importances is None or len(importances) == 0:
-        logger.warning("No feature importances available for '%s'. Skipping plot.", model_name)
+        logger.warning(
+            "No feature importances available for '%s'. Skipping plot.", model_name
+        )
         return out_dir / "feature_importance_unavailable.txt"
 
     # Sort and take top_n
-    importance_series = pd.Series(importances, index=feature_names).sort_values(ascending=False)
+    importance_series = pd.Series(importances, index=feature_names).sort_values(
+        ascending=False
+    )
     top_features = importance_series.head(top_n)
 
     fig, ax = plt.subplots(figsize=(10, max(5, top_n * 0.38)))
     colors = [ACCENT_COLOR] * len(top_features)
-    bars = ax.barh(top_features.index[::-1], top_features.values[::-1], color=colors, alpha=0.85)
+    bars = ax.barh(
+        top_features.index[::-1], top_features.values[::-1], color=colors, alpha=0.85
+    )
 
     # Add value labels on bars
     for bar, val in zip(bars, top_features.values[::-1]):
         ax.text(
-            bar.get_width() * 1.01, bar.get_y() + bar.get_height() / 2,
-            f"{val:,.1f}", va="center", ha="left", fontsize=8,
+            bar.get_width() * 1.01,
+            bar.get_y() + bar.get_height() / 2,
+            f"{val:,.1f}",
+            va="center",
+            ha="left",
+            fontsize=8,
         )
 
     ax.set_xlabel("Feature Importance (Gain)")
@@ -252,6 +292,7 @@ def plot_feature_importance(
 # 3. SHAP Summary Plot
 # ---------------------------------------------------------------------------
 
+
 def plot_shap_summary(
     model: Any,
     X_sample: pd.DataFrame,
@@ -260,7 +301,7 @@ def plot_shap_summary(
     report_dir: Path,
     max_display: int = 20,
     sample_size: int = 500,
-) -> Tuple[Path, Path]:
+) -> tuple[Path, Path]:
     """
     Generate SHAP beeswarm summary and bar importance plots.
 
@@ -291,7 +332,9 @@ def plot_shap_summary(
 
     logger.info(
         "[%s | %s] Computing SHAP values for %d samples...",
-        season, model_name, len(X_shap),
+        season,
+        model_name,
+        len(X_shap),
     )
 
     try:
@@ -300,7 +343,8 @@ def plot_shap_summary(
     except Exception as exc:
         logger.warning(
             "TreeExplainer failed for '%s' (%s). Falling back to KernelExplainer.",
-            model_name, exc,
+            model_name,
+            exc,
         )
         # Slow fallback for non-tree models
         background = shap.sample(X_shap, 50)
@@ -319,7 +363,8 @@ def plot_shap_summary(
     ax_bee = plt.gca()
     ax_bee.set_title(
         f"SHAP Beeswarm — {season} | {model_name.upper()}",
-        fontweight="bold", pad=12,
+        fontweight="bold",
+        pad=12,
     )
     bee_path = out_dir / "shap_beeswarm.png"
     fig_bee = plt.gcf()
@@ -339,7 +384,8 @@ def plot_shap_summary(
     ax_bar = plt.gca()
     ax_bar.set_title(
         f"SHAP Feature Importance (|Mean SHAP|) — {season} | {model_name.upper()}",
-        fontweight="bold", pad=12,
+        fontweight="bold",
+        pad=12,
     )
     bar_path = out_dir / "shap_bar.png"
     fig_bar = plt.gcf()
@@ -353,6 +399,7 @@ def plot_shap_summary(
 # ---------------------------------------------------------------------------
 # 4. SHAP Waterfall (single-instance local explanation)
 # ---------------------------------------------------------------------------
+
 
 def plot_shap_waterfall(
     model: Any,
@@ -395,7 +442,8 @@ def plot_shap_waterfall(
     ax = plt.gca()
     ax.set_title(
         f"SHAP Waterfall (Instance #{instance_idx}) — {season} | {model_name.upper()}",
-        fontweight="bold", pad=12,
+        fontweight="bold",
+        pad=12,
     )
     out_path = out_dir / "shap_waterfall.png"
     fig = plt.gcf()

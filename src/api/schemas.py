@@ -5,8 +5,8 @@ Pydantic v2 models for the prediction API, enforcing strict data validation
 and providing OpenAPI documentation.
 """
 
-from typing import List, Optional
-from pydantic import BaseModel, Field, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PM25InferenceFeatures(BaseModel):
@@ -14,6 +14,7 @@ class PM25InferenceFeatures(BaseModel):
     Input schema for a single PM2.5 prediction request.
     Includes current meteorology, historical lags, and cyclical encodings.
     """
+
     # Exclude metadata like date/season from model features, though they might be in the request for routing
     temperature: float = Field(..., description="Temperature in Celsius")
     humidity: float = Field(..., description="Relative humidity %")
@@ -21,7 +22,7 @@ class PM25InferenceFeatures(BaseModel):
     wind_direction: float = Field(..., description="Wind direction in degrees")
     pressure: float = Field(..., description="Atmospheric pressure in hPa")
     precipitation: float = Field(..., description="Precipitation in mm")
-    
+
     # Current and historical PM2.5
     pm25: float = Field(..., description="Current PM2.5 concentration (µg/m³)")
     pm25_lag_1: float = Field(..., description="PM2.5 lag (T-1)")
@@ -29,16 +30,16 @@ class PM25InferenceFeatures(BaseModel):
     pm25_lag_6: float = Field(..., description="PM2.5 lag (T-6)")
     pm25_lag_12: float = Field(..., description="PM2.5 lag (T-12)")
     pm25_lag_24: float = Field(..., description="PM2.5 lag (T-24)")
-    
+
     pm25_mean_3h: float = Field(..., description="3-hour rolling mean PM2.5")
     pm25_mean_6h: float = Field(..., description="6-hour rolling mean PM2.5")
     pm25_mean_12h: float = Field(..., description="12-hour rolling mean PM2.5")
     pm25_mean_24h: float = Field(..., description="24-hour rolling mean PM2.5")
-    
+
     # Wind vectors
     wind_x: float = Field(..., description="Wind vector X component")
     wind_y: float = Field(..., description="Wind vector Y component")
-    
+
     # Cyclical temporal features
     hour_sin: float = Field(..., description="Hour of day (sine component)")
     hour_cos: float = Field(..., description="Hour of day (cosine component)")
@@ -77,36 +78,44 @@ class PM25InferenceFeatures(BaseModel):
                 "month_sin": 0.5,
                 "month_cos": 0.866,
                 "day_of_year_sin": 0.1,
-                "day_of_year_cos": 0.99
+                "day_of_year_cos": 0.99,
             }
         }
     )
 
 
 class PredictRequest(BaseModel):
-    season: str = Field(..., description="Season for routing to the correct model (e.g., 'Winter')")
+    season: str = Field(
+        ..., description="Season for routing to the correct model (e.g., 'Winter')"
+    )
     features: PM25InferenceFeatures
-    batch_id: Optional[str] = Field(None, description="Optional ID for tracking requests")
+    batch_id: str | None = Field(
+        None, description="Optional ID for tracking requests"
+    )
 
 
 class PredictBatchRequest(BaseModel):
     season: str = Field(..., description="Season for routing (e.g., 'Winter')")
-    features_list: List[PM25InferenceFeatures] = Field(..., min_length=1, max_length=1000)
-    batch_id: Optional[str] = Field(None, description="Optional ID for tracking requests")
+    features_list: list[PM25InferenceFeatures] = Field(
+        ..., min_length=1, max_length=1000
+    )
+    batch_id: str | None = Field(
+        None, description="Optional ID for tracking requests"
+    )
 
 
 class PredictionResponse(BaseModel):
     prediction: float = Field(..., description="Predicted PM2.5 value (µg/m³)")
     model_used: str = Field(..., description="Algorithm used (e.g., 'lightgbm')")
     season: str = Field(..., description="Seasonal model used")
-    batch_id: Optional[str] = None
+    batch_id: str | None = None
 
 
 class PredictionBatchResponse(BaseModel):
-    predictions: List[float] = Field(..., description="List of predicted PM2.5 values")
+    predictions: list[float] = Field(..., description="List of predicted PM2.5 values")
     model_used: str = Field(..., description="Algorithm used")
     season: str = Field(..., description="Seasonal model used")
-    batch_id: Optional[str] = None
+    batch_id: str | None = None
 
 
 class ModelInfo(BaseModel):
@@ -118,5 +127,5 @@ class ModelInfo(BaseModel):
 
 class HealthResponse(BaseModel):
     status: str = "ok"
-    active_models: List[ModelInfo]
+    active_models: list[ModelInfo]
     drift_status: dict

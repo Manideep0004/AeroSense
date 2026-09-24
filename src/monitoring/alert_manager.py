@@ -32,9 +32,9 @@ from __future__ import annotations
 import json
 import logging
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, List, Optional
 
 from src.monitoring.types import DriftReport, DriftSeverity
 
@@ -45,13 +45,14 @@ logger = logging.getLogger("AaroSense.AlertManager")
 # Alert payload builder
 # ---------------------------------------------------------------------------
 
+
 def _build_alert_payload(report: DriftReport) -> dict:
     """Construct a standardised alert payload dict from a DriftReport."""
     severity = report.overall_severity
     recommended_action = (
-        "retrain"         if severity == DriftSeverity.CRITICAL else
-        "monitor_closely" if severity == DriftSeverity.WARNING  else
-        "none"
+        "retrain"
+        if severity == DriftSeverity.CRITICAL
+        else "monitor_closely" if severity == DriftSeverity.WARNING else "none"
     )
     return {
         "alert_id": str(uuid.uuid4()),
@@ -72,6 +73,7 @@ def _build_alert_payload(report: DriftReport) -> dict:
 # Alert Manager
 # ---------------------------------------------------------------------------
 
+
 class DriftAlertManager:
     """
     Dispatches drift alerts through multiple channels when a ``DriftReport``
@@ -89,8 +91,8 @@ class DriftAlertManager:
 
     def __init__(
         self,
-        alert_log_dir: Optional[Path] = Path("logs/drift_alerts"),
-        retraining_callbacks: Optional[List[Callable[[dict], None]]] = None,
+        alert_log_dir: Path | None = Path("logs/drift_alerts"),
+        retraining_callbacks: list[Callable[[dict], None]] | None = None,
         min_severity_to_alert: DriftSeverity = DriftSeverity.WARNING,
     ) -> None:
         self.alert_log_dir = Path(alert_log_dir) if alert_log_dir else None
@@ -108,7 +110,7 @@ class DriftAlertManager:
             self.min_severity_to_alert.name,
         )
 
-    def dispatch(self, report: DriftReport) -> Optional[dict]:
+    def dispatch(self, report: DriftReport) -> dict | None:
         """
         Evaluate the DriftReport and dispatch alerts if thresholds are crossed.
 
@@ -123,16 +125,16 @@ class DriftAlertManager:
             DriftSeverity.WARNING,
             DriftSeverity.CRITICAL,
         ]
-        should_alert = (
-            report.alert_triggered
-            and severity_order.index(report.overall_severity)
-            >= severity_order.index(self.min_severity_to_alert)
-        )
+        should_alert = report.alert_triggered and severity_order.index(
+            report.overall_severity
+        ) >= severity_order.index(self.min_severity_to_alert)
 
         if not should_alert:
             logger.info(
                 "No alert dispatched for [%s] — severity=%s, alert_triggered=%s.",
-                report.season, report.overall_severity.name, report.alert_triggered,
+                report.season,
+                report.overall_severity.name,
+                report.alert_triggered,
             )
             return None
 
@@ -188,9 +190,7 @@ class DriftAlertManager:
                 callback(payload)
                 logger.info("Callback %d executed successfully.", i)
             except Exception as exc:
-                logger.error(
-                    "Callback %d failed: %s", i, exc, exc_info=True
-                )
+                logger.error("Callback %d failed: %s", i, exc, exc_info=True)
 
     def add_callback(self, callback: Callable[[dict], None]) -> None:
         """
@@ -209,6 +209,7 @@ class DriftAlertManager:
 # ---------------------------------------------------------------------------
 # Built-in callback helpers
 # ---------------------------------------------------------------------------
+
 
 def log_retraining_trigger_callback(payload: dict) -> None:
     """
@@ -233,6 +234,7 @@ def mlflow_alert_callback(payload: dict) -> None:
     """
     try:
         import mlflow
+
         with mlflow.start_run(
             run_name=f"drift_alert_{payload['season']}_{payload['alert_id'][:8]}",
             tags={
@@ -243,13 +245,9 @@ def mlflow_alert_callback(payload: dict) -> None:
             },
         ):
             mlflow.log_metric("drift_fraction", payload["drift_fraction"])
-            mlflow.log_metric(
-                "n_drifted_features", len(payload["drifted_features"])
-            )
+            mlflow.log_metric("n_drifted_features", len(payload["drifted_features"]))
             mlflow.log_param("recommended_action", payload["recommended_action"])
             mlflow.log_dict(payload, artifact_file="drift_alert_payload.json")
-        logger.info(
-            "Drift alert logged to MLflow for season '%s'.", payload["season"]
-        )
+        logger.info("Drift alert logged to MLflow for season '%s'.", payload["season"])
     except Exception as exc:
         logger.warning("MLflow alert callback failed: %s", exc)

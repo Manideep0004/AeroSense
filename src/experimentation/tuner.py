@@ -13,7 +13,7 @@ Architecture:
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import mlflow
 import numpy as np
@@ -44,7 +44,7 @@ class OptunaSeasonalTuner:
     def __init__(
         self,
         config: ExperimentConfig,
-        parent_run_id: Optional[str] = None,
+        parent_run_id: str | None = None,
     ) -> None:
         self.config = config
         self.parent_run_id = parent_run_id
@@ -86,9 +86,7 @@ class OptunaSeasonalTuner:
 
         fold_rmse_list: list[float] = []
 
-        for fold_idx, (train_idx, val_idx) in enumerate(
-            self._tss.split(X_train)
-        ):
+        for fold_idx, (train_idx, val_idx) in enumerate(self._tss.split(X_train)):
             X_fold_train = X_train.iloc[train_idx]
             y_fold_train = y_train.iloc[train_idx]
             X_fold_val = X_train.iloc[val_idx]
@@ -146,7 +144,7 @@ class OptunaSeasonalTuner:
         season: str,
         X_train: pd.DataFrame,
         y_train: pd.Series,
-    ) -> Tuple[Dict[str, Any], float]:
+    ) -> tuple[dict[str, Any], float]:
         """
         Run a full Optuna study for a single (model, season) combination.
 
@@ -188,7 +186,7 @@ class OptunaSeasonalTuner:
             n_trials=self.config.n_optuna_trials,
             timeout=self.config.optuna_timeout,
             n_jobs=self.config.optuna_n_jobs,
-            catch=(Exception,),   # Gracefully skip malformed trials
+            catch=(Exception,),  # Gracefully skip malformed trials
             show_progress_bar=False,
         )
 

@@ -29,10 +29,10 @@ logging.basicConfig(
 
 if __name__ == "__main__":
     cfg = ExperimentConfig(
-        n_optuna_trials=2,        # Very fast — just validate wiring
+        n_optuna_trials=2,  # Very fast — just validate wiring
         n_cv_splits=2,
         optuna_timeout=120,
-        model_candidates=["lightgbm"],   # Single model for speed
+        model_candidates=["lightgbm"],  # Single model for speed
         model_artifact_dir=Path("models"),
         report_dir=Path("reports/plots"),
         mlflow_tracking_uri="sqlite:///mlruns/mlflow.db",
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     )
 
     results = runner.run(
-        seasons=["Winter"],   # Single season for speed
+        seasons=["Winter"],  # Single season for speed
         models=["lightgbm"],
     )
 

@@ -54,7 +54,7 @@ def main() -> None:
         ),
         tracking_uri="sqlite:///mlruns/mlflow.db",
         enable_shap=True,
-        shap_sample_size=200,    # Fast for smoke test
+        shap_sample_size=200,  # Fast for smoke test
     )
 
     reports = evaluator.evaluate_from_summary(
@@ -66,7 +66,9 @@ def main() -> None:
     all_ok = True
     for season, season_reports in reports.items():
         for model_name, report in season_reports.items():
-            status = "✅ PASSED" if report.verdict == GateVerdict.PASSED else "❌ FAILED"
+            status = (
+                "✅ PASSED" if report.verdict == GateVerdict.PASSED else "❌ FAILED"
+            )
             print(f"  [{season} | {model_name}] Gate: {status}")
             for c in report.criteria:
                 mark = "✅" if c.passed else "❌"
@@ -80,7 +82,9 @@ def main() -> None:
     for p in plot_files:
         print(f"    → {p.relative_to(REPORT_DIR)}")
 
-    print("\n" + ("=== ALL CHECKS PASSED ===" if all_ok else "=== SOME CHECKS FAILED ==="))
+    print(
+        "\n" + ("=== ALL CHECKS PASSED ===" if all_ok else "=== SOME CHECKS FAILED ===")
+    )
     sys.exit(0 if all_ok else 1)
 
 

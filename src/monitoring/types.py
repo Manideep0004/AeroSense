@@ -10,23 +10,24 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Dict, List, Optional
-
 
 # ---------------------------------------------------------------------------
 # Severity levels
 # ---------------------------------------------------------------------------
 
+
 class DriftSeverity(Enum):
     """Categorical severity of detected drift."""
-    NONE     = auto()   # No drift detected
-    WARNING  = auto()   # Marginal drift — monitor closely
-    CRITICAL = auto()   # Significant drift — trigger retraining
+
+    NONE = auto()  # No drift detected
+    WARNING = auto()  # Marginal drift — monitor closely
+    CRITICAL = auto()  # Significant drift — trigger retraining
 
 
 # ---------------------------------------------------------------------------
 # Per-feature result containers
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class KSTestResult:
@@ -40,6 +41,7 @@ class KSTestResult:
         drifted:     True if p_value < alpha threshold.
         alpha:       Significance level used (default 0.05).
     """
+
     feature: str
     statistic: float
     p_value: float
@@ -64,6 +66,7 @@ class PSIResult:
         psi_threshold: Threshold used (default 0.25).
         n_bins:        Number of bins used for discretization.
     """
+
     feature: str
     psi: float
     drifted: bool
@@ -75,9 +78,11 @@ class PSIResult:
 # Aggregate feature drift result
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FeatureDriftResult:
     """Combined drift assessment for a single feature (KS + PSI)."""
+
     feature: str
     ks: KSTestResult
     psi: PSIResult
@@ -103,7 +108,7 @@ class FeatureDriftResult:
             return DriftSeverity.WARNING
         return DriftSeverity.NONE
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "feature": self.feature,
             "ks_statistic": round(self.ks.statistic, 6),
@@ -119,6 +124,7 @@ class FeatureDriftResult:
 # ---------------------------------------------------------------------------
 # Full drift report for an inference batch
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class DriftReport:
@@ -136,17 +142,18 @@ class DriftReport:
         drift_fraction:     Fraction of features showing drift.
         metadata:           Optional dict for batch ID, timestamp, etc.
     """
+
     season: str
     batch_size: int
     n_features_tested: int
-    feature_results: List[FeatureDriftResult] = field(default_factory=list)
-    drifted_features: List[str] = field(default_factory=list)
+    feature_results: list[FeatureDriftResult] = field(default_factory=list)
+    drifted_features: list[str] = field(default_factory=list)
     overall_severity: DriftSeverity = DriftSeverity.NONE
     alert_triggered: bool = False
     drift_fraction: float = 0.0
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "season": self.season,
             "batch_size": self.batch_size,

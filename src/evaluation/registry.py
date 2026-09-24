@@ -17,7 +17,6 @@ Registry naming convention:
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import mlflow
 from mlflow import MlflowClient
@@ -119,7 +118,7 @@ class ModelRegistryManager:
         season: str,
         model_name: str,
         version: str,
-        description: Optional[str] = None,
+        description: str | None = None,
     ) -> None:
         """
         Transition a model version to the ``Staging`` stage.
@@ -134,7 +133,7 @@ class ModelRegistryManager:
             description: Optional description to attach to the version.
         """
         registry_name = _registry_model_name(season, model_name)
-        desc = description or f"Passed automated model gate — promoted to Staging."
+        desc = description or "Passed automated model gate — promoted to Staging."
 
         self.client.update_model_version(
             name=registry_name,
@@ -165,7 +164,7 @@ class ModelRegistryManager:
         season: str,
         model_name: str,
         version: str,
-        description: Optional[str] = None,
+        description: str | None = None,
         archive_existing: bool = True,
     ) -> None:
         """
@@ -261,9 +260,7 @@ class ModelRegistryManager:
     # Helpers
     # ------------------------------------------------------------------
 
-    def _archive_other_versions(
-        self, registry_name: str, exclude_version: str
-    ) -> None:
+    def _archive_other_versions(self, registry_name: str, exclude_version: str) -> None:
         """Archive all versions except the one being promoted."""
         try:
             all_versions = self.client.search_model_versions(
@@ -284,9 +281,11 @@ class ModelRegistryManager:
                         exclude_version,
                     )
         except Exception as exc:
-            logger.warning("Could not archive old versions of '%s': %s", registry_name, exc)
+            logger.warning(
+                "Could not archive old versions of '%s': %s", registry_name, exc
+            )
 
-    def get_latest_staging_uri(self, season: str, model_name: str) -> Optional[str]:
+    def get_latest_staging_uri(self, season: str, model_name: str) -> str | None:
         """
         Retrieve the MLflow model URI for the latest Staging version.
 
@@ -302,14 +301,13 @@ class ModelRegistryManager:
             versions = self.client.search_model_versions(
                 filter_string=f"name='{registry_name}'"
             )
-            staging = [
-                v for v in versions
-                if v.tags.get("stage") == "Staging"
-            ]
+            staging = [v for v in versions if v.tags.get("stage") == "Staging"]
             if not staging:
                 return None
             latest = max(staging, key=lambda v: int(v.version))
             return f"models:/{registry_name}/{latest.version}"
         except Exception as exc:
-            logger.warning("Could not retrieve Staging URI for '%s': %s", registry_name, exc)
+            logger.warning(
+                "Could not retrieve Staging URI for '%s': %s", registry_name, exc
+            )
             return None

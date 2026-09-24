@@ -32,7 +32,7 @@ import logging
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import pandas as pd
 
@@ -76,7 +76,7 @@ class BatchMonitor:
         psi_warning: float = 0.10,
         drift_fraction_alert: float = 0.20,
         enable_mlflow_alerts: bool = False,
-        features_to_monitor: Optional[List[str]] = None,
+        features_to_monitor: list[str] | None = None,
     ) -> None:
         self.report_log_dir = Path(report_log_dir)
         self.report_log_dir.mkdir(parents=True, exist_ok=True)
@@ -104,7 +104,7 @@ class BatchMonitor:
         )
 
         # In-memory rolling summary (last N reports per season)
-        self._recent_reports: Dict[str, List[DriftReport]] = {}
+        self._recent_reports: dict[str, list[DriftReport]] = {}
         self._max_history: int = 50
 
         logger.info("BatchMonitor ready. Baseline dir: '%s'.", baseline_dir)
@@ -117,7 +117,7 @@ class BatchMonitor:
         self,
         season: str,
         batch_df: pd.DataFrame,
-        batch_id: Optional[str] = None,
+        batch_id: str | None = None,
     ) -> DriftReport:
         """
         Run drift detection on an incoming inference batch and dispatch
@@ -160,8 +160,8 @@ class BatchMonitor:
     def monitor_batch_from_dict(
         self,
         season: str,
-        records: List[Dict[str, Any]],
-        batch_id: Optional[str] = None,
+        records: list[dict[str, Any]],
+        batch_id: str | None = None,
     ) -> DriftReport:
         """
         Convenience wrapper: accepts a list-of-dicts (JSON payload) and
@@ -182,7 +182,7 @@ class BatchMonitor:
     # Dashboard / health query helpers
     # ------------------------------------------------------------------
 
-    def get_recent_summary(self, season: str, n: int = 10) -> List[Dict]:
+    def get_recent_summary(self, season: str, n: int = 10) -> list[dict]:
         """
         Return the last ``n`` drift report summaries for a season.
         Used by the Streamlit dashboard's rolling drift chart.
@@ -221,14 +221,14 @@ class BatchMonitor:
         """
         return self.detector.get_psi_heatmap_data(season, batch_df)
 
-    def health_snapshot(self) -> Dict[str, Any]:
+    def health_snapshot(self) -> dict[str, Any]:
         """
         Return a compact health/status dict for the /health API endpoint.
 
         Returns:
             Dict with per-season alert counts and latest severity.
         """
-        snapshot: Dict[str, Any] = {}
+        snapshot: dict[str, Any] = {}
         for season, history in self._recent_reports.items():
             if not history:
                 continue
@@ -265,14 +265,15 @@ class BatchMonitor:
         self._recent_reports[season].append(report)
         # Trim to max history window
         if len(self._recent_reports[season]) > self._max_history:
-            self._recent_reports[season] = (
-                self._recent_reports[season][-self._max_history:]
-            )
+            self._recent_reports[season] = self._recent_reports[season][
+                -self._max_history :
+            ]
 
 
 def _generate_batch_id() -> str:
     """Generate a short unique batch identifier."""
     import uuid
+
     return uuid.uuid4().hex[:12]
 
 
@@ -280,38 +281,51 @@ def _generate_batch_id() -> str:
 # CLI entry point — simulates a production inference batch
 # ---------------------------------------------------------------------------
 
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="AaroSense Batch Drift Monitor — simulate a production batch",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--data-path", type=Path,
+        "--data-path",
+        type=Path,
         default=Path("data/raw/pm25_dataset.csv"),
         help="Path to raw CSV (test split used as simulated production batch).",
     )
     parser.add_argument(
-        "--season", type=str, default="Winter",
+        "--season",
+        type=str,
+        default="Winter",
         help="Season to simulate (must match a baseline Parquet file).",
     )
     parser.add_argument(
-        "--batch-size", type=int, default=300,
+        "--batch-size",
+        type=int,
+        default=300,
         help="Number of rows to sample from the test split as the batch.",
     )
     parser.add_argument(
-        "--inject-drift", action="store_true",
+        "--inject-drift",
+        action="store_true",
         help="Artificially inject Gaussian drift into the batch features.",
     )
     parser.add_argument(
-        "--drift-scale", type=float, default=3.0,
+        "--drift-scale",
+        type=float,
+        default=3.0,
         help="Standard deviation scale for injected drift noise.",
     )
     parser.add_argument(
-        "--ks-alpha", type=float, default=0.05,
+        "--ks-alpha",
+        type=float,
+        default=0.05,
         help="KS test significance level.",
     )
     parser.add_argument(
-        "--psi-threshold", type=float, default=0.25,
+        "--psi-threshold",
+        type=float,
+        default=0.25,
         help="PSI drift trigger threshold.",
     )
     return parser.parse_args()
@@ -328,8 +342,9 @@ if __name__ == "__main__":
 
     # ── Load + preprocess data to get the seasonal test split ─────────────
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-    from src.preprocessing import PM25DataPreprocessor, PreprocessingConfig
     import numpy as np
+
+    from src.preprocessing import PM25DataPreprocessor, PreprocessingConfig
 
     raw_df = pd.read_csv(args.data_path)
     pp = PM25DataPreprocessor(config=PreprocessingConfig(train_ratio=0.80))
@@ -337,7 +352,9 @@ if __name__ == "__main__":
     splits = pp.split_by_season(cleaned)
 
     if args.season not in splits:
-        print(f"ERROR: Season '{args.season}' not in data. Available: {list(splits.keys())}")
+        print(
+            f"ERROR: Season '{args.season}' not in data. Available: {list(splits.keys())}"
+        )
         sys.exit(1)
 
     test_df = splits[args.season].X_test
@@ -351,7 +368,7 @@ if __name__ == "__main__":
             "Injecting synthetic drift (scale=%.1f) into batch...", args.drift_scale
         )
         numeric_cols = batch.select_dtypes(include=[float, int]).columns.tolist()
-        for col in numeric_cols[:8]:   # Drift first 8 features
+        for col in numeric_cols[:8]:  # Drift first 8 features
             noise = np.random.normal(
                 loc=batch[col].mean() * args.drift_scale,
                 scale=batch[col].std() * args.drift_scale,

@@ -9,12 +9,12 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 from src.preprocessing import PM25DataPreprocessor, PreprocessingConfig
@@ -22,7 +22,7 @@ from src.preprocessing import PM25DataPreprocessor, PreprocessingConfig
 logger = logging.getLogger("AaroSense.Training")
 
 
-def compute_metrics(y_true: pd.Series, y_pred: np.ndarray) -> Dict[str, float]:
+def compute_metrics(y_true: pd.Series, y_pred: np.ndarray) -> dict[str, float]:
     """Computes standard regression evaluation metrics."""
     rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
     mae = float(mean_absolute_error(y_true, y_pred))
@@ -35,7 +35,7 @@ def train_seasonal_models(
     output_model_dir: Path = Path("models"),
     baseline_dir: Path = Path("baselines"),
     train_ratio: float = 0.80,
-) -> Dict[str, Dict[str, Any]]:
+) -> dict[str, dict[str, Any]]:
     """
     Complete pipeline:
     1. Loads raw CSV data.
@@ -70,7 +70,7 @@ def train_seasonal_models(
     preprocessor.export_drift_baselines(seasonal_data, output_dir=baseline_dir)
 
     # 4. Train seasonal models
-    results: Dict[str, Dict[str, Any]] = {}
+    results: dict[str, dict[str, Any]] = {}
 
     for season, splits in seasonal_data.items():
         logger.info("========== Training Model for Season: %s ==========", season)
@@ -128,7 +128,9 @@ def train_seasonal_models(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="AaroSense Seasonal PM2.5 Training Pipeline")
+    parser = argparse.ArgumentParser(
+        description="AaroSense Seasonal PM2.5 Training Pipeline"
+    )
     parser.add_argument(
         "--data-path",
         type=str,

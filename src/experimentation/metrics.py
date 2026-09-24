@@ -8,10 +8,8 @@ All functions operate on numpy arrays / pandas Series for framework agnosticism.
 from __future__ import annotations
 
 import logging
-from typing import Dict
 
 import numpy as np
-import pandas as pd
 
 logger = logging.getLogger("AaroSense.Metrics")
 
@@ -37,11 +35,13 @@ def mean_absolute_percentage_error(y_true: np.ndarray, y_pred: np.ndarray) -> fl
         logger.warning("All target values are zero; MAPE is undefined. Returning NaN.")
         return float("nan")
 
-    mape = np.mean(np.abs((y_true[nonzero_mask] - y_pred[nonzero_mask]) / y_true[nonzero_mask]))
+    mape = np.mean(
+        np.abs((y_true[nonzero_mask] - y_pred[nonzero_mask]) / y_true[nonzero_mask])
+    )
     return float(round(mape * 100.0, 4))
 
 
-def compute_all_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
+def compute_all_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
     """
     Compute the full suite of regression evaluation metrics.
 
@@ -77,7 +77,7 @@ def compute_all_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, flo
     return metrics
 
 
-def compute_persistence_baseline(y_true: np.ndarray) -> Dict[str, float]:
+def compute_persistence_baseline(y_true: np.ndarray) -> dict[str, float]:
     """
     Compute metrics for a naïve persistence forecast (yhat_t = y_{t-1}).
 
@@ -94,7 +94,7 @@ def compute_persistence_baseline(y_true: np.ndarray) -> Dict[str, float]:
     if len(y_arr) < 2:
         raise ValueError("Need at least 2 samples to compute persistence baseline.")
 
-    y_true_trimmed = y_arr[1:]    # t=1..N
+    y_true_trimmed = y_arr[1:]  # t=1..N
     y_pred_persistence = y_arr[:-1]  # t=0..N-1  (previous step as prediction)
 
     metrics = compute_all_metrics(y_true_trimmed, y_pred_persistence)

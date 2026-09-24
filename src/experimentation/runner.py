@@ -27,7 +27,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import joblib
 import mlflow
@@ -36,7 +36,10 @@ import numpy as np
 import pandas as pd
 
 from src.experimentation.config import ExperimentConfig
-from src.experimentation.metrics import compute_all_metrics, compute_persistence_baseline
+from src.experimentation.metrics import (
+    compute_all_metrics,
+    compute_persistence_baseline,
+)
 from src.experimentation.model_factory import get_model_builder, get_search_space
 from src.experimentation.tuner import OptunaSeasonalTuner
 from src.preprocessing import PM25DataPreprocessor, PreprocessingConfig
@@ -57,9 +60,10 @@ logger = logging.getLogger("AaroSense.Runner")
 # Helper: rebuild best model from tuned parameters
 # ---------------------------------------------------------------------------
 
+
 def _build_best_model(
     model_name: str,
-    best_params: Dict[str, Any],
+    best_params: dict[str, Any],
     config: ExperimentConfig,
 ) -> Any:
     """
@@ -88,6 +92,7 @@ def _build_best_model(
 # Core experimentation class
 # ---------------------------------------------------------------------------
 
+
 class ExperimentationRunner:
     """
     Drives the full multi-model, multi-season MLOps experimentation pipeline.
@@ -100,9 +105,8 @@ class ExperimentationRunner:
     def __init__(self, config: ExperimentConfig, data_path: Path) -> None:
         self.config = config
         self.data_path = data_path
-        self._data_path = data_path   # alias used by the M2 evaluation hook
+        self._data_path = data_path  # alias used by the M2 evaluation hook
         self._setup_mlflow()
-
 
     def _setup_mlflow(self) -> None:
         """Configure MLflow tracking URI and create/retrieve experiment."""
@@ -120,7 +124,7 @@ class ExperimentationRunner:
             self.config.experiment_name,
         )
 
-    def _load_and_preprocess(self) -> Dict[str, Any]:
+    def _load_and_preprocess(self) -> dict[str, Any]:
         """
         Load raw CSV, run preprocessing pipeline, and return seasonal splits.
 
@@ -150,7 +154,7 @@ class ExperimentationRunner:
         model_name: str,
         splits: Any,
         tuner: OptunaSeasonalTuner,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run the full experiment for one (season, model) pair:
         1. Optuna hyperparameter search (nested child runs).
@@ -188,7 +192,10 @@ class ExperimentationRunner:
             parent_run_id = parent_run.info.run_id
 
             # ---- 1. Hyperparameter Tuning (nested child runs) -------------
-            logger.info("  [1/4] Starting Optuna tuning (%d trials)...", self.config.n_optuna_trials)
+            logger.info(
+                "  [1/4] Starting Optuna tuning (%d trials)...",
+                self.config.n_optuna_trials,
+            )
             tuner.parent_run_id = parent_run_id
             best_params, best_cv_rmse = tuner.tune_model(
                 model_name=model_name,
@@ -261,7 +268,7 @@ class ExperimentationRunner:
             # Log mlflow model (sklearn-compatible flavour).
             # MLflow 3.x uses skops for serialisation and requires an explicit
             # trusted-type allowlist for third-party estimator internals.
-            _SKOPS_TRUSTED: Dict[str, list[str]] = {
+            _SKOPS_TRUSTED: dict[str, list[str]] = {
                 "lightgbm": [
                     "lightgbm.sklearn.LGBMRegressor",
                     "lightgbm.basic.Booster",
@@ -321,11 +328,11 @@ class ExperimentationRunner:
 
     def run(
         self,
-        seasons: Optional[List[str]] = None,
-        models: Optional[List[str]] = None,
+        seasons: list[str] | None = None,
+        models: list[str] | None = None,
         run_evaluation: bool = True,
         enable_shap: bool = True,
-    ) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    ) -> dict[str, dict[str, dict[str, Any]]]:
         """
         Execute the full multi-model, multi-season experimentation sweep.
 
@@ -351,7 +358,7 @@ class ExperimentationRunner:
             len(active_seasons) * len(active_models),
         )
 
-        all_results: Dict[str, Dict[str, Dict[str, Any]]] = {}
+        all_results: dict[str, dict[str, dict[str, Any]]] = {}
 
         for season in active_seasons:
             if season not in seasonal_data:
@@ -390,7 +397,9 @@ class ExperimentationRunner:
 
         # ── Milestone 2: Evaluation, Explainability & Registry ─────────────
         if run_evaluation:
-            logger.info("Starting Milestone 2 — Model Evaluation & Registry promotion...")
+            logger.info(
+                "Starting Milestone 2 — Model Evaluation & Registry promotion..."
+            )
             try:
                 from src.evaluation.evaluator import ModelEvaluator
                 from src.evaluation.model_gate import GateConfig
@@ -409,7 +418,8 @@ class ExperimentationRunner:
                 )
             except Exception as exc:
                 logger.warning(
-                    "Milestone 2 evaluation raised an error (non-fatal): %s", exc,
+                    "Milestone 2 evaluation raised an error (non-fatal): %s",
+                    exc,
                     exc_info=True,
                 )
 
@@ -420,6 +430,7 @@ class ExperimentationRunner:
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_json_serialisable(obj: Any) -> Any:
     """Recursively convert numpy/Path types to JSON-serialisable forms."""
@@ -434,9 +445,7 @@ def _make_json_serialisable(obj: Any) -> Any:
     return obj
 
 
-def _log_leaderboard(
-    all_results: Dict[str, Dict[str, Dict[str, Any]]]
-) -> None:
+def _log_leaderboard(all_results: dict[str, dict[str, dict[str, Any]]]) -> None:
     """Print a formatted leaderboard table to stdout after sweep completion."""
     rows = []
     for season, model_results in all_results.items():
@@ -462,7 +471,9 @@ def _log_leaderboard(
 
     df = pd.DataFrame(rows).sort_values(["Season", "Test RMSE"])
     separator = "-" * 85
-    logger.info("\n%s\n  LEADERBOARD — AaroSense Multi-Model Sweep\n%s", separator, separator)
+    logger.info(
+        "\n%s\n  LEADERBOARD — AaroSense Multi-Model Sweep\n%s", separator, separator
+    )
     logger.info("\n%s", df.to_string(index=False))
     logger.info(separator)
 
@@ -470,6 +481,7 @@ def _log_leaderboard(
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
+
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(

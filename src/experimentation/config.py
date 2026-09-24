@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
 # Experiment-level constants
@@ -18,11 +17,11 @@ from typing import Any, Dict, List, Optional
 EXPERIMENT_NAME: str = "AaroSense-PM25-Seasonal-Forecasting"
 MLFLOW_TRACKING_URI: str = "sqlite:///mlruns/mlflow.db"
 RANDOM_STATE: int = 42
-N_OPTUNA_TRIALS: int = 40          # Trials per model per season
-N_CV_SPLITS: int = 5               # TimeSeriesSplit folds for temporal CV
+N_OPTUNA_TRIALS: int = 40  # Trials per model per season
+N_CV_SPLITS: int = 5  # TimeSeriesSplit folds for temporal CV
 OPTUNA_TIMEOUT_SECONDS: int = 600  # Hard cap per study (10 min)
-OPTUNA_N_JOBS: int = 1             # Sequential to avoid MLflow log collision
-METRICS_OPTIMIZE: str = "rmse"     # Primary metric Optuna minimises
+OPTUNA_N_JOBS: int = 1  # Sequential to avoid MLflow log collision
+METRICS_OPTIMIZE: str = "rmse"  # Primary metric Optuna minimises
 
 # Evaluation thresholds for the model gate (Milestone 2)
 RMSE_THRESHOLD_GATE: float = 50.0  # µg/m³ — reject models above this RMSE
@@ -107,6 +106,6 @@ class ExperimentConfig:
     rf_space: RandomForestSearchSpace = field(default_factory=RandomForestSearchSpace)
 
     # Candidate model names – controls which models are included in the sweep
-    model_candidates: List[str] = field(
+    model_candidates: list[str] = field(
         default_factory=lambda: ["lightgbm", "xgboost", "catboost", "random_forest"]
     )

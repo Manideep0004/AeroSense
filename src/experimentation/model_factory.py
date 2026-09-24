@@ -9,7 +9,7 @@ All models are wrapped with consistent interfaces (fit / predict).
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 import optuna
 
@@ -35,14 +35,20 @@ def build_lightgbm(trial: optuna.Trial, space: Any, random_state: int) -> ModelI
     """
     import lightgbm as lgb  # lazy import — avoids cost if model not selected
 
-    params: Dict[str, Any] = {
+    params: dict[str, Any] = {
         "num_leaves": trial.suggest_int("num_leaves", *space.num_leaves),
         "max_depth": trial.suggest_int("max_depth", *space.max_depth),
         "n_estimators": trial.suggest_int("n_estimators", *space.n_estimators),
-        "learning_rate": trial.suggest_float("learning_rate", *space.learning_rate, log=True),
-        "min_child_samples": trial.suggest_int("min_child_samples", *space.min_child_samples),
+        "learning_rate": trial.suggest_float(
+            "learning_rate", *space.learning_rate, log=True
+        ),
+        "min_child_samples": trial.suggest_int(
+            "min_child_samples", *space.min_child_samples
+        ),
         "subsample": trial.suggest_float("subsample", *space.subsample),
-        "colsample_bytree": trial.suggest_float("colsample_bytree", *space.colsample_bytree),
+        "colsample_bytree": trial.suggest_float(
+            "colsample_bytree", *space.colsample_bytree
+        ),
         "reg_alpha": trial.suggest_float("reg_alpha", *space.reg_alpha, log=True),
         "reg_lambda": trial.suggest_float("reg_lambda", *space.reg_lambda, log=True),
         "random_state": random_state,
@@ -67,13 +73,19 @@ def build_xgboost(trial: optuna.Trial, space: Any, random_state: int) -> ModelIn
     """
     import xgboost as xgb  # lazy import
 
-    params: Dict[str, Any] = {
+    params: dict[str, Any] = {
         "n_estimators": trial.suggest_int("n_estimators", *space.n_estimators),
         "max_depth": trial.suggest_int("max_depth", *space.max_depth),
-        "learning_rate": trial.suggest_float("learning_rate", *space.learning_rate, log=True),
+        "learning_rate": trial.suggest_float(
+            "learning_rate", *space.learning_rate, log=True
+        ),
         "subsample": trial.suggest_float("subsample", *space.subsample),
-        "colsample_bytree": trial.suggest_float("colsample_bytree", *space.colsample_bytree),
-        "min_child_weight": trial.suggest_int("min_child_weight", *space.min_child_weight),
+        "colsample_bytree": trial.suggest_float(
+            "colsample_bytree", *space.colsample_bytree
+        ),
+        "min_child_weight": trial.suggest_int(
+            "min_child_weight", *space.min_child_weight
+        ),
         "gamma": trial.suggest_float("gamma", *space.gamma),
         "reg_alpha": trial.suggest_float("reg_alpha", *space.reg_alpha, log=True),
         "reg_lambda": trial.suggest_float("reg_lambda", *space.reg_lambda, log=True),
@@ -100,10 +112,12 @@ def build_catboost(trial: optuna.Trial, space: Any, random_state: int) -> ModelI
     """
     from catboost import CatBoostRegressor  # lazy import
 
-    params: Dict[str, Any] = {
+    params: dict[str, Any] = {
         "iterations": trial.suggest_int("iterations", *space.iterations),
         "depth": trial.suggest_int("depth", *space.depth),
-        "learning_rate": trial.suggest_float("learning_rate", *space.learning_rate, log=True),
+        "learning_rate": trial.suggest_float(
+            "learning_rate", *space.learning_rate, log=True
+        ),
         "l2_leaf_reg": trial.suggest_float("l2_leaf_reg", *space.l2_leaf_reg),
         "bagging_temperature": trial.suggest_float(
             "bagging_temperature", *space.bagging_temperature
@@ -117,7 +131,9 @@ def build_catboost(trial: optuna.Trial, space: Any, random_state: int) -> ModelI
     return CatBoostRegressor(**params)
 
 
-def build_random_forest(trial: optuna.Trial, space: Any, random_state: int) -> ModelInstance:
+def build_random_forest(
+    trial: optuna.Trial, space: Any, random_state: int
+) -> ModelInstance:
     """
     Construct a Random Forest regressor with Optuna-sampled hyperparameters.
 
@@ -131,11 +147,15 @@ def build_random_forest(trial: optuna.Trial, space: Any, random_state: int) -> M
     """
     from sklearn.ensemble import RandomForestRegressor
 
-    params: Dict[str, Any] = {
+    params: dict[str, Any] = {
         "n_estimators": trial.suggest_int("n_estimators", *space.n_estimators),
         "max_depth": trial.suggest_int("max_depth", *space.max_depth),
-        "min_samples_split": trial.suggest_int("min_samples_split", *space.min_samples_split),
-        "min_samples_leaf": trial.suggest_int("min_samples_leaf", *space.min_samples_leaf),
+        "min_samples_split": trial.suggest_int(
+            "min_samples_split", *space.min_samples_split
+        ),
+        "min_samples_leaf": trial.suggest_int(
+            "min_samples_leaf", *space.min_samples_leaf
+        ),
         "max_features": trial.suggest_float("max_features", *space.max_features),
         "random_state": random_state,
         "n_jobs": -1,
@@ -148,7 +168,7 @@ def build_random_forest(trial: optuna.Trial, space: Any, random_state: int) -> M
 # Dispatcher
 # ---------------------------------------------------------------------------
 
-MODEL_BUILDERS: Dict[str, Any] = {
+MODEL_BUILDERS: dict[str, Any] = {
     "lightgbm": build_lightgbm,
     "xgboost": build_xgboost,
     "catboost": build_catboost,

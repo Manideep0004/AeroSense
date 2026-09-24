@@ -19,7 +19,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Dict, List, Optional
 
 logger = logging.getLogger("AaroSense.ModelGate")
 
@@ -28,20 +27,24 @@ logger = logging.getLogger("AaroSense.ModelGate")
 # Gate verdict enum
 # ---------------------------------------------------------------------------
 
+
 class GateVerdict(Enum):
     """Possible outcomes of the model evaluation gate."""
-    PASSED  = auto()   # All criteria satisfied — promote to Registry
-    FAILED  = auto()   # One or more criteria failed — reject
-    SKIPPED = auto()   # Gate was not run (e.g., missing metrics)
+
+    PASSED = auto()  # All criteria satisfied — promote to Registry
+    FAILED = auto()  # One or more criteria failed — reject
+    SKIPPED = auto()  # Gate was not run (e.g., missing metrics)
 
 
 # ---------------------------------------------------------------------------
 # Per-criterion result
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CriterionResult:
     """Result of evaluating a single gate criterion."""
+
     name: str
     passed: bool
     actual_value: float
@@ -52,6 +55,7 @@ class CriterionResult:
 # ---------------------------------------------------------------------------
 # Full gate report
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class GateReport:
@@ -65,13 +69,14 @@ class GateReport:
         criteria:   List of individual criterion results.
         summary:    Human-readable summary string.
     """
+
     season: str
     model_name: str
     verdict: GateVerdict
-    criteria: List[CriterionResult] = field(default_factory=list)
+    criteria: list[CriterionResult] = field(default_factory=list)
     summary: str = ""
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Serialise report to a JSON-compatible dictionary."""
         return {
             "season": self.season,
@@ -95,6 +100,7 @@ class GateReport:
 # Gate configuration
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GateConfig:
     """
@@ -106,6 +112,7 @@ class GateConfig:
         r2_min:          Minimum acceptable test R². Default 0.70.
         beat_persistence: Whether the model must beat persistence baseline. Default True.
     """
+
     rmse_threshold: float = 50.0
     mae_threshold: float = 35.0
     r2_min: float = 0.70
@@ -116,6 +123,7 @@ class GateConfig:
 # Gate evaluator
 # ---------------------------------------------------------------------------
 
+
 class ModelEvaluationGate:
     """
     Evaluates a trained model's performance metrics against production
@@ -125,15 +133,15 @@ class ModelEvaluationGate:
         config: ``GateConfig`` instance defining acceptance thresholds.
     """
 
-    def __init__(self, config: Optional[GateConfig] = None) -> None:
+    def __init__(self, config: GateConfig | None = None) -> None:
         self.config = config or GateConfig()
 
     def evaluate(
         self,
         season: str,
         model_name: str,
-        test_metrics: Dict[str, float],
-        persistence_metrics: Dict[str, float],
+        test_metrics: dict[str, float],
+        persistence_metrics: dict[str, float],
     ) -> GateReport:
         """
         Run all gate criteria and return a structured report.
@@ -147,7 +155,7 @@ class ModelEvaluationGate:
         Returns:
             ``GateReport`` with per-criterion results and overall verdict.
         """
-        criteria: List[CriterionResult] = []
+        criteria: list[CriterionResult] = []
 
         # ── Criterion 1: Absolute RMSE bound ──────────────────────────────
         rmse = test_metrics.get("rmse", float("inf"))
