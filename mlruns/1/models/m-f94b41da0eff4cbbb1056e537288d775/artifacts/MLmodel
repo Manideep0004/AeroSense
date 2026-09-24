@@ -1,0 +1,56 @@
+artifact_path: /Users/param/placements/AeroSense/mlruns/1/models/m-f94b41da0eff4cbbb1056e537288d775/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.14.4
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.0
+    skops_trusted_types:
+    - xgboost.sklearn.XGBRegressor
+    - xgboost.core.Booster
+    - collections.OrderedDict
+    - numpy.dtype
+is_signature_from_type_hint: false
+mlflow_version: 3.16.1
+model_id: m-f94b41da0eff4cbbb1056e537288d775
+model_size_bytes: 718556
+model_uuid: m-f94b41da0eff4cbbb1056e537288d775
+prompts: null
+run_id: 72e430eba33d4126af0e53c5136be5f2
+saved_input_example_info:
+  artifact_path: input_example.json
+  pandas_orient: split
+  serving_input_path: serving_input_example.json
+  type: dataframe
+signature:
+  inputs: '[{"type": "double", "name": "temperature", "required": true}, {"type":
+    "double", "name": "humidity", "required": true}, {"type": "double", "name": "wind_speed",
+    "required": true}, {"type": "double", "name": "wind_direction", "required": true},
+    {"type": "double", "name": "pressure", "required": true}, {"type": "double", "name":
+    "precipitation", "required": true}, {"type": "double", "name": "pm25", "required":
+    true}, {"type": "double", "name": "pm25_lag_1", "required": true}, {"type": "double",
+    "name": "pm25_lag_3", "required": true}, {"type": "double", "name": "pm25_lag_6",
+    "required": true}, {"type": "double", "name": "pm25_lag_12", "required": true},
+    {"type": "double", "name": "pm25_lag_24", "required": true}, {"type": "double",
+    "name": "pm25_mean_3h", "required": true}, {"type": "double", "name": "pm25_mean_6h",
+    "required": true}, {"type": "double", "name": "pm25_mean_12h", "required": true},
+    {"type": "double", "name": "pm25_mean_24h", "required": true}, {"type": "double",
+    "name": "wind_x", "required": true}, {"type": "double", "name": "wind_y", "required":
+    true}, {"type": "double", "name": "hour_sin", "required": true}, {"type": "double",
+    "name": "hour_cos", "required": true}, {"type": "double", "name": "day_of_week_sin",
+    "required": true}, {"type": "double", "name": "day_of_week_cos", "required": true},
+    {"type": "double", "name": "month_sin", "required": true}, {"type": "double",
+    "name": "month_cos", "required": true}, {"type": "double", "name": "day_of_year_sin",
+    "required": true}, {"type": "double", "name": "day_of_year_cos", "required": true}]'
+  outputs: '[{"type": "float", "required": true}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2026-09-24 12:58:38.461212'

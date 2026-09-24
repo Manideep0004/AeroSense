@@ -1,0 +1,36 @@
+{
+  "season": "Summer",
+  "model": "lightgbm",
+  "verdict": "FAILED",
+  "criteria": [
+    {
+      "name": "RMSE < Threshold",
+      "passed": true,
+      "actual": 4.8869,
+      "threshold": 50.0,
+      "message": "RMSE=4.8869 < 50.0 \u2705"
+    },
+    {
+      "name": "Beats Persistence Baseline",
+      "passed": false,
+      "actual": 4.8869,
+      "threshold": 2.7276,
+      "message": "RMSE=4.8869 \u2265 Persistence=2.7276 \u274c"
+    },
+    {
+      "name": "R\u00b2 > 0.7",
+      "passed": true,
+      "actual": 0.8555,
+      "threshold": 0.7,
+      "message": "R\u00b2=0.8555 > 0.7 \u2705"
+    },
+    {
+      "name": "MAE < Threshold",
+      "passed": true,
+      "actual": 3.6802,
+      "threshold": 35.0,
+      "message": "MAE=3.6802 < 35.0 \u2705"
+    }
+  ],
+  "summary": "[Summer | lightgbm] Gate FAILED \u274c \u2014 Failed criteria: ['Beats Persistence Baseline']"
+}

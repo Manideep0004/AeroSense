@@ -1,0 +1,36 @@
+{
+  "season": "Spring",
+  "model": "xgboost",
+  "verdict": "FAILED",
+  "criteria": [
+    {
+      "name": "RMSE < Threshold",
+      "passed": true,
+      "actual": 7.5035,
+      "threshold": 50.0,
+      "message": "RMSE=7.5035 < 50.0 \u2705"
+    },
+    {
+      "name": "Beats Persistence Baseline",
+      "passed": false,
+      "actual": 7.5035,
+      "threshold": 5.4945,
+      "message": "RMSE=7.5035 \u2265 Persistence=5.4945 \u274c"
+    },
+    {
+      "name": "R\u00b2 > 0.7",
+      "passed": true,
+      "actual": 0.8662,
+      "threshold": 0.7,
+      "message": "R\u00b2=0.8662 > 0.7 \u2705"
+    },
+    {
+      "name": "MAE < Threshold",
+      "passed": true,
+      "actual": 5.4263,
+      "threshold": 35.0,
+      "message": "MAE=5.4263 < 35.0 \u2705"
+    }
+  ],
+  "summary": "[Spring | xgboost] Gate FAILED \u274c \u2014 Failed criteria: ['Beats Persistence Baseline']"
+}

@@ -14,7 +14,7 @@
         "reg_alpha": 5.472429642032189e-06,
         "reg_lambda": 0.00052821153945323
       },
-      "best_cv_rmse": 39.91045,
+      "best_cv_rmse": 41.2479,
       "train_metrics": {
         "rmse": 23.1255,
         "mae": 15.0645,
@@ -34,7 +34,461 @@
         "mape": 10.5667
       },
       "model_path": "models/winter/lightgbm_model.joblib",
-      "mlflow_run_id": "9533dff3bc704100877c469cc32c2ad8",
+      "mlflow_run_id": "d24f72f0a32b44a5af0a103be0dad67b",
+      "features": [
+        "temperature",
+        "humidity",
+        "wind_speed",
+        "wind_direction",
+        "pressure",
+        "precipitation",
+        "pm25",
+        "pm25_lag_1",
+        "pm25_lag_3",
+        "pm25_lag_6",
+        "pm25_lag_12",
+        "pm25_lag_24",
+        "pm25_mean_3h",
+        "pm25_mean_6h",
+        "pm25_mean_12h",
+        "pm25_mean_24h",
+        "wind_x",
+        "wind_y",
+        "hour_sin",
+        "hour_cos",
+        "day_of_week_sin",
+        "day_of_week_cos",
+        "month_sin",
+        "month_cos",
+        "day_of_year_sin",
+        "day_of_year_cos"
+      ]
+    },
+    "xgboost": {
+      "season": "Winter",
+      "model": "xgboost",
+      "best_params": {
+        "n_estimators": 596,
+        "max_depth": 3,
+        "learning_rate": 0.2526878207508456,
+        "subsample": 0.9162213204002109,
+        "colsample_bytree": 0.6061695553391381,
+        "min_child_weight": 2,
+        "gamma": 0.9170225492671691,
+        "reg_alpha": 5.472429642032189e-06,
+        "reg_lambda": 0.00052821153945323
+      },
+      "best_cv_rmse": 46.01274,
+      "train_metrics": {
+        "rmse": 17.2986,
+        "mae": 12.4309,
+        "r2": 0.995,
+        "mape": 4.5629
+      },
+      "test_metrics": {
+        "rmse": 25.5323,
+        "mae": 18.1087,
+        "r2": 0.9491,
+        "mape": 14.6639
+      },
+      "persistence_metrics": {
+        "rmse": 38.1574,
+        "mae": 17.0117,
+        "r2": 0.8865,
+        "mape": 10.5667
+      },
+      "model_path": "models/winter/xgboost_model.joblib",
+      "mlflow_run_id": "7f15744fd9884ffbb202f7a0d0c0006f",
+      "features": [
+        "temperature",
+        "humidity",
+        "wind_speed",
+        "wind_direction",
+        "pressure",
+        "precipitation",
+        "pm25",
+        "pm25_lag_1",
+        "pm25_lag_3",
+        "pm25_lag_6",
+        "pm25_lag_12",
+        "pm25_lag_24",
+        "pm25_mean_3h",
+        "pm25_mean_6h",
+        "pm25_mean_12h",
+        "pm25_mean_24h",
+        "wind_x",
+        "wind_y",
+        "hour_sin",
+        "hour_cos",
+        "day_of_week_sin",
+        "day_of_week_cos",
+        "month_sin",
+        "month_cos",
+        "day_of_year_sin",
+        "day_of_year_cos"
+      ]
+    }
+  },
+  "Spring": {
+    "lightgbm": {
+      "season": "Spring",
+      "model": "lightgbm",
+      "best_params": {
+        "num_leaves": 148,
+        "max_depth": 3,
+        "n_estimators": 779,
+        "learning_rate": 0.11536162338241387,
+        "min_child_samples": 25,
+        "subsample": 0.5909124836035503,
+        "colsample_bytree": 0.5917022549267169,
+        "reg_alpha": 5.472429642032189e-06,
+        "reg_lambda": 0.00052821153945323
+      },
+      "best_cv_rmse": 33.02786,
+      "train_metrics": {
+        "rmse": 15.9419,
+        "mae": 10.0843,
+        "r2": 0.986,
+        "mape": 8.7419
+      },
+      "test_metrics": {
+        "rmse": 8.0634,
+        "mae": 5.9633,
+        "r2": 0.8455,
+        "mape": 17.6487
+      },
+      "persistence_metrics": {
+        "rmse": 5.4945,
+        "mae": 2.61,
+        "r2": 0.9283,
+        "mape": 6.6122
+      },
+      "model_path": "models/spring/lightgbm_model.joblib",
+      "mlflow_run_id": "44791267f0fe4424af84ac8d51fefa71",
+      "features": [
+        "temperature",
+        "humidity",
+        "wind_speed",
+        "wind_direction",
+        "pressure",
+        "precipitation",
+        "pm25",
+        "pm25_lag_1",
+        "pm25_lag_3",
+        "pm25_lag_6",
+        "pm25_lag_12",
+        "pm25_lag_24",
+        "pm25_mean_3h",
+        "pm25_mean_6h",
+        "pm25_mean_12h",
+        "pm25_mean_24h",
+        "wind_x",
+        "wind_y",
+        "hour_sin",
+        "hour_cos",
+        "day_of_week_sin",
+        "day_of_week_cos",
+        "month_sin",
+        "month_cos",
+        "day_of_year_sin",
+        "day_of_year_cos"
+      ]
+    },
+    "xgboost": {
+      "season": "Spring",
+      "model": "xgboost",
+      "best_params": {
+        "n_estimators": 596,
+        "max_depth": 3,
+        "learning_rate": 0.2526878207508456,
+        "subsample": 0.9162213204002109,
+        "colsample_bytree": 0.6061695553391381,
+        "min_child_weight": 2,
+        "gamma": 0.9170225492671691,
+        "reg_alpha": 5.472429642032189e-06,
+        "reg_lambda": 0.00052821153945323
+      },
+      "best_cv_rmse": 34.442719999999994,
+      "train_metrics": {
+        "rmse": 11.7304,
+        "mae": 8.1896,
+        "r2": 0.9924,
+        "mape": 7.6093
+      },
+      "test_metrics": {
+        "rmse": 7.5035,
+        "mae": 5.4263,
+        "r2": 0.8662,
+        "mape": 17.2023
+      },
+      "persistence_metrics": {
+        "rmse": 5.4945,
+        "mae": 2.61,
+        "r2": 0.9283,
+        "mape": 6.6122
+      },
+      "model_path": "models/spring/xgboost_model.joblib",
+      "mlflow_run_id": "858c4c4564944d7d85b68c8013679f22",
+      "features": [
+        "temperature",
+        "humidity",
+        "wind_speed",
+        "wind_direction",
+        "pressure",
+        "precipitation",
+        "pm25",
+        "pm25_lag_1",
+        "pm25_lag_3",
+        "pm25_lag_6",
+        "pm25_lag_12",
+        "pm25_lag_24",
+        "pm25_mean_3h",
+        "pm25_mean_6h",
+        "pm25_mean_12h",
+        "pm25_mean_24h",
+        "wind_x",
+        "wind_y",
+        "hour_sin",
+        "hour_cos",
+        "day_of_week_sin",
+        "day_of_week_cos",
+        "month_sin",
+        "month_cos",
+        "day_of_year_sin",
+        "day_of_year_cos"
+      ]
+    }
+  },
+  "Summer": {
+    "lightgbm": {
+      "season": "Summer",
+      "model": "lightgbm",
+      "best_params": {
+        "num_leaves": 148,
+        "max_depth": 3,
+        "n_estimators": 779,
+        "learning_rate": 0.11536162338241387,
+        "min_child_samples": 25,
+        "subsample": 0.5909124836035503,
+        "colsample_bytree": 0.5917022549267169,
+        "reg_alpha": 5.472429642032189e-06,
+        "reg_lambda": 0.00052821153945323
+      },
+      "best_cv_rmse": 23.26672,
+      "train_metrics": {
+        "rmse": 11.5819,
+        "mae": 7.1066,
+        "r2": 0.9886,
+        "mape": 8.5258
+      },
+      "test_metrics": {
+        "rmse": 4.8869,
+        "mae": 3.6802,
+        "r2": 0.8555,
+        "mape": 22.3962
+      },
+      "persistence_metrics": {
+        "rmse": 2.7276,
+        "mae": 1.4923,
+        "r2": 0.955,
+        "mape": 6.7308
+      },
+      "model_path": "models/summer/lightgbm_model.joblib",
+      "mlflow_run_id": "fef656782f8c4232ad5edbd43127adb5",
+      "features": [
+        "temperature",
+        "humidity",
+        "wind_speed",
+        "wind_direction",
+        "pressure",
+        "precipitation",
+        "pm25",
+        "pm25_lag_1",
+        "pm25_lag_3",
+        "pm25_lag_6",
+        "pm25_lag_12",
+        "pm25_lag_24",
+        "pm25_mean_3h",
+        "pm25_mean_6h",
+        "pm25_mean_12h",
+        "pm25_mean_24h",
+        "wind_x",
+        "wind_y",
+        "hour_sin",
+        "hour_cos",
+        "day_of_week_sin",
+        "day_of_week_cos",
+        "month_sin",
+        "month_cos",
+        "day_of_year_sin",
+        "day_of_year_cos"
+      ]
+    },
+    "xgboost": {
+      "season": "Summer",
+      "model": "xgboost",
+      "best_params": {
+        "n_estimators": 596,
+        "max_depth": 3,
+        "learning_rate": 0.2526878207508456,
+        "subsample": 0.9162213204002109,
+        "colsample_bytree": 0.6061695553391381,
+        "min_child_weight": 2,
+        "gamma": 0.9170225492671691,
+        "reg_alpha": 5.472429642032189e-06,
+        "reg_lambda": 0.00052821153945323
+      },
+      "best_cv_rmse": 24.27398,
+      "train_metrics": {
+        "rmse": 7.9712,
+        "mae": 5.5115,
+        "r2": 0.9946,
+        "mape": 7.3992
+      },
+      "test_metrics": {
+        "rmse": 5.1169,
+        "mae": 3.5866,
+        "r2": 0.8416,
+        "mape": 20.8469
+      },
+      "persistence_metrics": {
+        "rmse": 2.7276,
+        "mae": 1.4923,
+        "r2": 0.955,
+        "mape": 6.7308
+      },
+      "model_path": "models/summer/xgboost_model.joblib",
+      "mlflow_run_id": "72e430eba33d4126af0e53c5136be5f2",
+      "features": [
+        "temperature",
+        "humidity",
+        "wind_speed",
+        "wind_direction",
+        "pressure",
+        "precipitation",
+        "pm25",
+        "pm25_lag_1",
+        "pm25_lag_3",
+        "pm25_lag_6",
+        "pm25_lag_12",
+        "pm25_lag_24",
+        "pm25_mean_3h",
+        "pm25_mean_6h",
+        "pm25_mean_12h",
+        "pm25_mean_24h",
+        "wind_x",
+        "wind_y",
+        "hour_sin",
+        "hour_cos",
+        "day_of_week_sin",
+        "day_of_week_cos",
+        "month_sin",
+        "month_cos",
+        "day_of_year_sin",
+        "day_of_year_cos"
+      ]
+    }
+  },
+  "Autumn": {
+    "lightgbm": {
+      "season": "Autumn",
+      "model": "lightgbm",
+      "best_params": {
+        "num_leaves": 148,
+        "max_depth": 3,
+        "n_estimators": 779,
+        "learning_rate": 0.11536162338241387,
+        "min_child_samples": 25,
+        "subsample": 0.5909124836035503,
+        "colsample_bytree": 0.5917022549267169,
+        "reg_alpha": 5.472429642032189e-06,
+        "reg_lambda": 0.00052821153945323
+      },
+      "best_cv_rmse": 55.851099999999995,
+      "train_metrics": {
+        "rmse": 20.2072,
+        "mae": 13.1232,
+        "r2": 0.9906,
+        "mape": 7.3502
+      },
+      "test_metrics": {
+        "rmse": 17.1915,
+        "mae": 13.2558,
+        "r2": 0.877,
+        "mape": 34.9108
+      },
+      "persistence_metrics": {
+        "rmse": 6.5228,
+        "mae": 3.2346,
+        "r2": 0.9823,
+        "mape": 6.2333
+      },
+      "model_path": "models/autumn/lightgbm_model.joblib",
+      "mlflow_run_id": "18abcdef9ded40e683d91878c34280b3",
+      "features": [
+        "temperature",
+        "humidity",
+        "wind_speed",
+        "wind_direction",
+        "pressure",
+        "precipitation",
+        "pm25",
+        "pm25_lag_1",
+        "pm25_lag_3",
+        "pm25_lag_6",
+        "pm25_lag_12",
+        "pm25_lag_24",
+        "pm25_mean_3h",
+        "pm25_mean_6h",
+        "pm25_mean_12h",
+        "pm25_mean_24h",
+        "wind_x",
+        "wind_y",
+        "hour_sin",
+        "hour_cos",
+        "day_of_week_sin",
+        "day_of_week_cos",
+        "month_sin",
+        "month_cos",
+        "day_of_year_sin",
+        "day_of_year_cos"
+      ]
+    },
+    "xgboost": {
+      "season": "Autumn",
+      "model": "xgboost",
+      "best_params": {
+        "n_estimators": 596,
+        "max_depth": 3,
+        "learning_rate": 0.2526878207508456,
+        "subsample": 0.9162213204002109,
+        "colsample_bytree": 0.6061695553391381,
+        "min_child_weight": 2,
+        "gamma": 0.9170225492671691,
+        "reg_alpha": 5.472429642032189e-06,
+        "reg_lambda": 0.00052821153945323
+      },
+      "best_cv_rmse": 56.82246,
+      "train_metrics": {
+        "rmse": 14.5136,
+        "mae": 10.4121,
+        "r2": 0.9951,
+        "mape": 6.4199
+      },
+      "test_metrics": {
+        "rmse": 16.9481,
+        "mae": 13.116,
+        "r2": 0.8805,
+        "mape": 33.6619
+      },
+      "persistence_metrics": {
+        "rmse": 6.5228,
+        "mae": 3.2346,
+        "r2": 0.9823,
+        "mape": 6.2333
+      },
+      "model_path": "models/autumn/xgboost_model.joblib",
+      "mlflow_run_id": "ce06f1a12bdb4a2692d7d4637cfd4341",
       "features": [
         "temperature",
         "humidity",
