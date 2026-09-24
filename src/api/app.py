@@ -176,6 +176,61 @@ async def predict_batch(
 
 
 from fastapi.staticfiles import StaticFiles
+import os
+import glob
+import json
+import subprocess
+from pydantic import BaseModel
+
+class RetrainRequest(BaseModel):
+    season: str
+    n_trials: int = 5
+    models: list[str] = ["lightgbm"]
+
+@app.post("/current", response_model=PredictionResponse)
+async def current_single(request: PredictRequest):
+    """Alias for /predict (Requested by user)"""
+    return await predict_single(request)
+
+@app.post("/forecast", response_model=PredictionBatchResponse)
+async def forecast_batch(request: PredictBatchRequest, background_tasks: BackgroundTasks):
+    """Alias for /predict-batch (Requested by user)"""
+    return await predict_batch(request, background_tasks)
+
+@app.get("/model-status", response_model=list[ModelInfo])
+async def model_status():
+    """Alias for /model-info (Requested by user)"""
+    return await get_model_info()
+
+@app.get("/drift-history")
+async def get_drift_history():
+    """Retrieve recent drift alerts from log files."""
+    history = []
+    log_files = glob.glob("logs/drift_alerts/*.jsonl")
+    for lf in sorted(log_files, reverse=True): # Newest first
+        with open(lf, "r") as f:
+            for line in f:
+                try:
+                    history.append(json.loads(line.strip()))
+                except:
+                    pass
+    # Return 50 most recent alerts
+    return history[-50:][::-1]
+
+@app.post("/retrain")
+async def trigger_retrain(req: RetrainRequest, background_tasks: BackgroundTasks):
+    """Trigger background retraining for a specific season."""
+    def _run_retrain():
+        try:
+            cmd = ["python3", "-m", "src.experimentation.runner", "--seasons", req.season.capitalize(), "--n-trials", str(req.n_trials), "--models"] + req.models
+            subprocess.run(cmd, check=True)
+            # Instruct API to reload models (handled implicitly next time predict is called, or we can reload inference_service)
+            inference_service._load_best_models()
+        except Exception as e:
+            logger.error(f"Retraining failed: {e}")
+            
+    background_tasks.add_task(_run_retrain)
+    return {"status": "retraining_started", "season": req.season, "message": "Retraining pipeline initiated in the background."}
 from fastapi.responses import FileResponse
 import os
 
