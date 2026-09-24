@@ -52,6 +52,27 @@ flowchart TD
 
 ---
 
+
+---
+
+## 📸 Dashboards & Visualizations
+
+### AeroSense Mobile App
+The mobile client provides users with real-time Delhi air quality telemetry, integrated MLOps performance snapshots, and a dedicated AI Copilot for forecasting explanations.
+
+<div align="center">
+  <img src="appss/mobiledashboard1.png" width="30%" alt="Mobile Dashboard 1" style="margin-right: 10px;" />
+  <img src="appss/mobiledashboard2.png" width="30%" alt="Mobile Dashboard 2" />
+</div>
+
+### Explainable AI (SHAP & Diagnostics)
+As part of the **Evaluation Gate**, AeroSense automatically renders SHAP (SHapley Additive exPlanations) and residual diagnostic plots for every candidate model, ensuring full feature transparency before deployment.
+
+<div align="center">
+  <img src="reports/plots/winter/lightgbm/shap_beeswarm.png" width="45%" alt="SHAP Beeswarm Plot" style="margin-right: 10px;" />
+  <img src="reports/plots/winter/lightgbm/residual_analysis.png" width="45%" alt="Residual Analysis" />
+</div>
+
 ## 🚀 Quickstart & Deployment
 
 AeroSense uses a multi-stage Docker build to package both the React frontend and the Python FastAPI backend into a single lightweight image, accompanied by a dedicated MLflow tracking server.

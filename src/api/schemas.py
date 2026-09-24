@@ -5,7 +5,6 @@ Pydantic v2 models for the prediction API, enforcing strict data validation
 and providing OpenAPI documentation.
 """
 
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -89,9 +88,7 @@ class PredictRequest(BaseModel):
         ..., description="Season for routing to the correct model (e.g., 'Winter')"
     )
     features: PM25InferenceFeatures
-    batch_id: str | None = Field(
-        None, description="Optional ID for tracking requests"
-    )
+    batch_id: str | None = Field(None, description="Optional ID for tracking requests")
 
 
 class PredictBatchRequest(BaseModel):
@@ -99,9 +96,7 @@ class PredictBatchRequest(BaseModel):
     features_list: list[PM25InferenceFeatures] = Field(
         ..., min_length=1, max_length=1000
     )
-    batch_id: str | None = Field(
-        None, description="Optional ID for tracking requests"
-    )
+    batch_id: str | None = Field(None, description="Optional ID for tracking requests")
 
 
 class PredictionResponse(BaseModel):

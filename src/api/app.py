@@ -174,7 +174,6 @@ async def predict_batch(
         )
 
 
-
 from fastapi.staticfiles import StaticFiles
 import os
 import glob
@@ -182,21 +181,26 @@ import json
 import subprocess
 from pydantic import BaseModel
 
+
 class RetrainRequest(BaseModel):
     season: str
     n_trials: int = 5
     models: list[str] = ["lightgbm"]
+
 
 from fastapi.responses import FileResponse
 import datetime
 import random
 from pydantic import BaseModel
 
+
 class CopilotRequest(BaseModel):
     message: str
 
+
 class RetrainClientRequest(BaseModel):
     reason: str = "Feature drift detected"
+
 
 @app.get("/current", include_in_schema=False)
 async def android_current():
@@ -213,11 +217,12 @@ async def android_current():
             "humidity": 64,
             "wind_speed": 2.4,
             "wind_direction": 270,
-            "pressure": 1008.5
+            "pressure": 1008.5,
         },
         "insight": "PM2.5 is expected to decrease over the next 3 hours as wind conditions improve.",
-        "updated_at": datetime.datetime.utcnow().isoformat() + "Z"
+        "updated_at": datetime.datetime.utcnow().isoformat() + "Z",
     }
+
 
 @app.get("/forecast", include_in_schema=False)
 async def android_forecast():
@@ -225,16 +230,17 @@ async def android_forecast():
     now = datetime.datetime.utcnow()
     return {
         "location": "Delhi, India",
-        "model": {
-            "name": "Winter XGBoost",
-            "version": "v1.2.0"
-        },
+        "model": {"name": "Winter XGBoost", "version": "v1.2.0"},
         "forecast": [
-            {"time": (now + datetime.timedelta(hours=i)).strftime("%H:00"), "pm25": 142.0 - (i * 3) + random.uniform(-2, 2)}
+            {
+                "time": (now + datetime.timedelta(hours=i)).strftime("%H:00"),
+                "pm25": 142.0 - (i * 3) + random.uniform(-2, 2),
+            }
             for i in range(1, 7)
         ],
-        "generated_at": now.isoformat() + "Z"
+        "generated_at": now.isoformat() + "Z",
     }
+
 
 @app.get("/model-status", include_in_schema=False)
 async def android_model_status():
@@ -243,20 +249,13 @@ async def android_model_status():
         "model": {
             "name": "Winter XGBoost",
             "version": "v1.2.0",
-            "status": "production"
+            "status": "production",
         },
-        "performance": {
-            "mae": 8.4,
-            "rmse": 12.7,
-            "r2": 0.91
-        },
-        "drift": {
-            "status": "normal",
-            "ks_statistic": 0.08,
-            "p_value": 0.42
-        },
-        "last_checked": datetime.datetime.utcnow().isoformat() + "Z"
+        "performance": {"mae": 8.4, "rmse": 12.7, "r2": 0.91},
+        "drift": {"status": "normal", "ks_statistic": 0.08, "p_value": 0.42},
+        "last_checked": datetime.datetime.utcnow().isoformat() + "Z",
     }
+
 
 @app.get("/drift-history", include_in_schema=False)
 async def android_drift_history():
@@ -265,27 +264,31 @@ async def android_drift_history():
     return {
         "threshold": 0.20,
         "history": [
-            {"timestamp": (now - datetime.timedelta(hours=8-i)).strftime("%Y-%m-%dT%H:00:00"), "ks_statistic": val}
+            {
+                "timestamp": (now - datetime.timedelta(hours=8 - i)).strftime(
+                    "%Y-%m-%dT%H:00:00"
+                ),
+                "ks_statistic": val,
+            }
             for i, val in enumerate([0.06, 0.08, 0.07, 0.09, 0.12, 0.18, 0.34, 0.28])
-        ]
+        ],
     }
+
 
 @app.post("/retrain", include_in_schema=False)
 async def android_retrain(req: RetrainClientRequest, background_tasks: BackgroundTasks):
     """Android Client POST /retrain endpoint"""
-    return {
-        "status": "started",
-        "reason": req.reason,
-        "model": "Winter XGBoost"
-    }
+    return {"status": "started", "reason": req.reason, "model": "Winter XGBoost"}
+
 
 @app.post("/copilot", include_in_schema=False)
 async def android_copilot(req: CopilotRequest):
     """Android Client POST /copilot endpoint"""
     return {
         "answer": f"You asked: '{req.message}'. PM2.5 is currently elevated at 142 µg/m³. Relatively low wind speed may be limiting pollutant dispersion. The forecast currently shows a gradual decrease over the next few hours.",
-        "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
+        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
     }
+
 
 import os
 
@@ -295,6 +298,8 @@ if os.path.exists("frontend/dist"):
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_frontend(full_path: str):
-        if os.path.exists(f"frontend/dist/{full_path}") and os.path.isfile(f"frontend/dist/{full_path}"):
+        if os.path.exists(f"frontend/dist/{full_path}") and os.path.isfile(
+            f"frontend/dist/{full_path}"
+        ):
             return FileResponse(f"frontend/dist/{full_path}")
         return FileResponse("frontend/dist/index.html")
