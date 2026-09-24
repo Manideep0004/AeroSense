@@ -39,9 +39,7 @@ venv.bak/
 *.swo
 
 # Large raw datasets (track scripts and baselines, not raw data dumps if large)
-data/raw/*.csv
-data/raw/*.parquet
-!data/raw/.gitkeep
+
 
 # OS generated files
 .DS_Store
